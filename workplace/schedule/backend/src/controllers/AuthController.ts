@@ -1,4 +1,5 @@
-import { Context } from 'hono'
+import { OAuth2Client } from 'google-auth-library'
+import { AppContext } from '../types/hono'
 import { setCookie, deleteCookie } from 'hono/cookie'
 import { sign } from 'hono/jwt'
 import argon2 from 'argon2'
@@ -9,11 +10,13 @@ import { UserModel } from '../models/userModel'
 import { TmpUserModel } from '../models/tmpUserModel'
 import { SignupInput, LoginInput } from '../validators/authValidators'
 
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
+
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export const AuthController = {
   // 1. 仮登録 (POST /api/auth/signup)
-  async signup(c: Context, data: SignupInput) {
+  async signup(c: AppContext, data: SignupInput) {
     try {
       const { name, email, password } = data
 
@@ -43,7 +46,7 @@ export const AuthController = {
     }
   },
   // 2. 本登録 (GET /api/auth/verify?token=xxxx)
-  async verify(c: Context) {
+  async verify(c: AppContext) {
     try {
       const token = c.req.query('token')
       if (!token) {
@@ -76,7 +79,7 @@ export const AuthController = {
   },
 
   // 3. ログイン
-  async login(c: Context, data: LoginInput) {
+  async login(c: AppContext, data: LoginInput) {
     try {
       const { email, password } = data
 
@@ -119,7 +122,7 @@ export const AuthController = {
   },
 
   // 4. ログアウト (POST /api/auth/logout)
-  async logout(c: Context) {
+  async logout(c: AppContext) {
     deleteCookie(c, 'token', {
       path: '/',
       secure: process.env.NODE_ENV === 'production',
@@ -129,8 +132,62 @@ export const AuthController = {
   },
 
   // 5. ログイン状態確認 (GET /api/auth/me)
-  async getMe(c: Context) {
+  async getMe(c: AppContext) {
     const payload = c.get('jwtPayload')
     return c.json({ user: payload })
+  },
+
+  async googleLogin(c: AppContext, credential: string) {
+    try {
+      const ticket = await googleClient.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      })
+      const payload = ticket.getPayload()
+
+      if (!payload || !payload.email) {
+        return c.json({ error: '無効な Google トークンです' }, 400)
+      }
+
+      const { email, name } = payload
+
+      let user = await UserModel.findByEmail(email)
+
+      if (!user) {
+        const dummyHash = await argon2.hash(crypto.randomUUID())
+        const [newUser] = await sql`
+          INSERT INTO users (name, email, password_hash)
+          VALUES (${name || 'Google User'}, ${email}, ${dummyHash})
+          RETURNING id, name, email
+        `
+        user = newUser
+      }
+
+      const secret = process.env.JWT_SECRET || 'fallback_secret'
+      const token = await sign(
+        {
+          id: user.id,
+          email: user.email,
+          exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
+        },
+        secret
+      )
+
+      setCookie(c, 'token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Lax',
+        path: '/',
+        maxAge: 60 * 60 * 24,
+      })
+
+      return c.json({
+        message: 'Googleログインに成功しました',
+        user: { id: user.id, name: user.name, email: user.email },
+      })
+    } catch (err) {
+      console.error(err)
+      return c.json({ error: 'Google認証に失敗しました' }, 500)
+    }
   }
 }

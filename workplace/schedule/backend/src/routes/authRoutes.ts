@@ -1,12 +1,13 @@
 import { Hono } from 'hono'
+import { Env } from '../types/hono'
 import { AuthController } from '../controllers/AuthController'
-import { zValidator } from '@hono/zod-validator'
 import { authCheck } from '../middleware/authMiddleware'
 import { signupSchema, loginSchema } from '../validators/authValidators'
 
-const authRoutes = new Hono()
+const authRoutes = new Hono<Env>()
 
-// 公開ルート（Zodミドルウェアを適用）
+authRoutes.get('/me', authCheck, AuthController.getMe)
+
 authRoutes.post('/signup', async (c) => {
   const body = await c.req.json()
   const result = await signupSchema.safeParseAsync(body)
@@ -28,5 +29,15 @@ authRoutes.post('/login', async (c) => {
   }
 
   return AuthController.login(c, result.data)
+})
+
+authRoutes.post('/google', async (c) => {
+  const { credential } = await c.req.json().catch(() => ({}))
+
+  if (!credential) {
+    return c.json({ error: 'Google クライアント認証情報が必要です' }, 400)
+  }
+
+  return AuthController.googleLogin(c, credential)
 })
 export default authRoutes
