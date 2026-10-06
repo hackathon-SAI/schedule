@@ -14,8 +14,13 @@ function initGoogleAuth() {
       'openid',
       'email',
       'profile',
-      'https://www.googleapis.com/auth/calendar.readonly',
-      'https://www.googleapis.com/auth/classroom.courses.readonly'
+      'https://www.googleapis.com/auth/classroom.course-work.readonly',
+      'https://www.googleapis.com/auth/classroom.courses.readonly',
+      'https://www.googleapis.com/auth/userinfo.profile',
+      'https://www.googleapis.com/auth/calendar.app.created',
+      'https://www.googleapis.com/auth/calendar.events.freebusy',
+      'https://www.googleapis.com/auth/calendar.freebusy',
+      'https://www.googleapis.com/auth/classroom.announcements'
     ].join(' '),
     ux_mode: 'popup',
     callback: handleCodeResponse, // 認可コード交換後のコールバック
@@ -69,15 +74,17 @@ async function handleCodeResponse(response) {
       }),
     });
 
-    const data = await res.json();
-
-    if (res.ok) {
-      window.location.href = 'index.html';
-    } else {
-      // サーバーから返ってきた具体的なエラー詳細をコンソールに出力
-      console.error('バックエンド認証エラー詳細:', data);
-      alert(data.error || 'ログイン処理に失敗しました');
+    // レスポンスが正常（200 OK）でない場合はテキストとしてログ出力
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error(`バックエンド認証エラー (ステータス: ${res.status}):`, errorText);
+      alert(`ログイン処理に失敗しました (Status: ${res.status})`);
+      return;
     }
+
+    const data = await res.json();
+    window.location.href = 'index.html';
+
   } catch (err) {
     console.error('通信エラー:', err);
     alert('サーバーとの通信に失敗しました');
