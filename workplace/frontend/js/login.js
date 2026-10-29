@@ -29,7 +29,7 @@ function initGoogleAuth() {
     ux_mode: 'redirect',
     
     // 👇 認証完了後に戻ってくるページ（ご自身の login.html や専用のコールバック用URLなど）
-    redirect_uri: 'https://schedule-sai.vercel.app/login.html',
+    redirect_uri: 'https://schedule-sai.vercel.app/calendar.html',
   });
 }
 
