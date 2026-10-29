@@ -10,7 +10,7 @@ const googleClient = new OAuth2Client(
   'postmessage' // popup（Code Client）認証用のリダイレクト識別子
 )
 
-const getJwtSecret = (): string => {
+export const getJwtSecret = (): string => {
   const secret = process.env.JWT_SECRET
   if (!secret) {
     throw new Error('FATAL: JWT_SECRET environment variable is not set.')
