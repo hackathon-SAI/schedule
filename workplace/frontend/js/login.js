@@ -1,8 +1,9 @@
-// APIベースURL
+// APIベースURL（本番環境用）
 const API_BASE_URL = "https://schedule-backend-navy.vercel.app";
 
 let codeClient;
 
+// Google OAuth クライアントの初期化
 function initGoogleAuth() {
   if (typeof google === 'undefined' || !google.accounts) {
     console.warn('Google SDK がまだ読み込まれていません。再試行します...');
@@ -25,15 +26,57 @@ function initGoogleAuth() {
       'https://www.googleapis.com/auth/classroom.announcements'
     ].join(' '),
     
-    // 👇 ここを redirect に変更
-    ux_mode: 'redirect',
+    // 👇 ポップアップモードに戻す
+    ux_mode: 'popup',
     
-    // 👇 認証完了後に戻ってくるページ（ご自身の login.html や専用のコールバック用URLなど）
-    redirect_uri: 'https://schedule-sai.vercel.app/calendar.html',
+    // 👇 コールバック関数をその場で直接定義（スコープエラーを防ぐためインライン記述）
+    callback: async (response) => {
+      if (response.error) {
+        console.error('Google 認可エラー:', response.error);
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include', // セッションCookieを保存するために必須
+          body: JSON.stringify({
+            code: response.code,
+          }),
+        });
+
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error(`バックエンド認証エラー (ステータス: ${res.status}):`, errorText);
+          alert(`ログイン処理に失敗しました (Status: ${res.status})`);
+          return;
+        }
+
+        const data = await res.json();
+        
+        // 👇 ログイン成功したら calendar.html へ移動
+        window.location.href = 'calendar.html';
+
+      } catch (err) {
+        console.error('通信エラー:', err);
+        alert('サーバーとの通信に失敗しました');
+      }
+    }
   });
 }
 
-// ボタンクリック時はそのままリクエストを呼ぶだけで、自動的に画面が遷移します
+// ページ読み込み時
+document.addEventListener('DOMContentLoaded', async () => {
+  if (typeof redirectIfAuthenticated === 'function') {
+    redirectIfAuthenticated(API_BASE_URL);
+  }
+  initGoogleAuth();
+});
+
+// ボタンクリック時に呼び出す関数
 function loginWithGoogle() {
   if (codeClient) {
     codeClient.requestCode();
@@ -46,50 +89,5 @@ function loginWithGoogle() {
         alert('Google ログインの初期化中です。少々お待ちください。');
       }
     }, 1000);
-  }
-}
-
-// ページ読み込み時の処理
-document.addEventListener('DOMContentLoaded', async () => {
-  if (typeof redirectIfAuthenticated === 'function') {
-    redirectIfAuthenticated(API_BASE_URL);
-  }
-  initGoogleAuth();
-
-  // 👇 【重要】リダイレクトされて戻ってきたとき、URLに `code` が含まれているかチェックする
-  const urlParams = new URLSearchParams(window.location.search);
-  const code = urlParams.get('code');
-
-  if (code) {
-    // 戻ってきたので、バックエンドにコードを送信してログインを完了させる
-    handleRedirectCode(code);
-  }
-});
-
-// バックエンドへ認可コードを送信する関数
-async function handleRedirectCode(code) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({ code }),
-    });
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error(`バックエンド認証エラー (ステータス: ${res.status}):`, errorText);
-      alert(`ログイン処理に失敗しました (Status: ${res.status})`);
-      return;
-    }
-
-    // ログイン成功したらメイン画面へ
-    window.location.href = 'https://schedule-sai.vercel.app/calendar.html';
-
-  } catch (err) {
-    console.error('通信エラー:', err);
-    alert('サーバーとの通信に失敗しました');
   }
 }
