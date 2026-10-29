@@ -36,9 +36,9 @@ schedule/
 
 ## クイックスタート
 
-- Node.js 22 以上が必要です
-- Google Cloud で OAuth クライアントを作成します
-- .env ファイルを作成します (`.gitignore` で除外済みです)
+- Node.js 22 以上が必要です。
+- Google Cloud で OAuth クライアントを作成します。
+- .env ファイルを作成します (`.gitignore` で除外済みです)。
 
 詳しい手順は [開発者ガイド](./workplace/docs/DEVELOPMENT.md) を参照してください。
 
