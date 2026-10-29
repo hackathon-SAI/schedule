@@ -71,6 +71,7 @@ function initGoogleAuth() {
       }
     }
   });
+}
 
 // ページ読み込み時
 document.addEventListener('DOMContentLoaded', async () => {
@@ -94,5 +95,4 @@ function loginWithGoogle() {
       }
     }, 1000);
   }
-}
 }
