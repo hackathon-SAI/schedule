@@ -7,13 +7,10 @@ import { Env } from './src/types/hono'
 import eventRoutes from './src/routes/eventRoutes'
 import authRoutes from './src/routes/authRoutes'
 import groupRoutes from './src/routes/groupRoutes'
-<<<<<<< HEAD
-=======
 import userRoutes from './src/routes/userRoutes'
 
 // 起動時に JWT_SECRET の未設定・短すぎる値を検知して即失敗させる
 getJwtSecret()
->>>>>>> 9ebca3ad1e61de31e8b84d5d95b4dbc84e539d83
 
 const app = new Hono<Env>()
 
@@ -31,10 +28,6 @@ app.use(
   cors({
     origin: (origin) => {
       const allowedOrigins = [
-        'http://127.0.0.1:5500',
-        'http://localhost:5500',
-        'http://127.0.0.1:5000',
-        'http://localhost:5000',
         'https://schedule-sai.vercel.app',
         'https://schedule-backend-navy.vercel.app',
       ]
@@ -65,10 +58,7 @@ app.onError((err, c) => {
 app.route('/api/events', eventRoutes)
 app.route('/api/auth', authRoutes)
 app.route('/api/groups', groupRoutes)
-<<<<<<< HEAD
-=======
 app.route('/api/users', userRoutes)
->>>>>>> 9ebca3ad1e61de31e8b84d5d95b4dbc84e539d83
 
 // 5. ローカル開発用サーバー起動
 if (process.env.NODE_ENV !== 'production') {
