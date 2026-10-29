@@ -86,7 +86,7 @@ async function handleRedirectCode(code) {
     }
 
     // ログイン成功したらメイン画面へ
-    window.location.href = 'calendar.html';
+    window.location.href = 'https://schedule-sai.vercel.app/calendar.html';
 
   } catch (err) {
     console.error('通信エラー:', err);

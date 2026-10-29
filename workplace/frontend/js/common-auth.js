@@ -62,6 +62,6 @@ async function requireAuth(baseUrl = window.API_BASE_URL || DEFAULT_API_URL) {
 async function redirectIfAuthenticated(baseUrl = window.API_BASE_URL || DEFAULT_API_URL) {
   const user = await checkAuth(baseUrl);
   if (user) {
-    window.location.href = 'calendar.html';
+    window.location.href = 'https://schedule-sai.vercel.app/calendar.html';
   }
 }
