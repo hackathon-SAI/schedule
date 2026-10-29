@@ -36,17 +36,23 @@ function initGoogleAuth() {
         return;
       }
 
+      console.log('1. Googleから認可コードを取得しました。バックエンドに送信します...', response.code);
+
       try {
+        console.log('2. fetch を開始します:', `${API_BASE_URL}/api/auth/google`);
+
         const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include', // セッションCookieを保存するために必須
+          credentials: 'include',
           body: JSON.stringify({
             code: response.code,
           }),
         });
+
+        console.log('3. バックエンドからレスポンスを受信しました。Status:', res.status);
 
         if (!res.ok) {
           const errorText = await res.text();
@@ -56,17 +62,15 @@ function initGoogleAuth() {
         }
 
         const data = await res.json();
-        
-        // 👇 ログイン成功したら calendar.html へ移動
+        console.log('4. ログイン成功！ calendar.html へ遷移します。', data);
         window.location.href = 'calendar.html';
 
       } catch (err) {
-        console.error('通信エラー:', err);
-        alert('サーバーとの通信に失敗しました');
+        console.error('通信エラー発生:', err);
+        alert('サーバーとの通信に失敗しました（コンソール詳細を確認してください）');
       }
     }
   });
-}
 
 // ページ読み込み時
 document.addEventListener('DOMContentLoaded', async () => {
@@ -90,4 +94,5 @@ function loginWithGoogle() {
       }
     }, 1000);
   }
+}
 }
