@@ -62,6 +62,6 @@ async function requireAuth(baseUrl = window.API_BASE_URL || DEFAULT_API_URL) {
 async function redirectIfAuthenticated(baseUrl = window.API_BASE_URL || DEFAULT_API_URL) {
   const user = await checkAuth(baseUrl);
   if (user) {
-    window.location.href = 'index.html';
+    window.location.href = 'calendar.html';
   }
 }

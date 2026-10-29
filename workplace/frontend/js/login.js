@@ -86,7 +86,7 @@ async function handleRedirectCode(code) {
     }
 
     // ログイン成功したらメイン画面へ
-    window.location.href = 'index.html';
+    window.location.href = 'calendar.html';
 
   } catch (err) {
     console.error('通信エラー:', err);
