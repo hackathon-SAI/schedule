@@ -23,16 +23,16 @@ app.use(
 )
 
 // 2. CORS設定
+const allowedOrigins = [
+  'https://schedule-sai.vercel.app',
+]
+
 app.use(
   '/api/*',
   cors({
     origin: (origin) => {
-      const allowedOrigins = [
-        'https://schedule-sai.vercel.app',
-        'https://schedule-backend-navy.vercel.app',
-      ]
-      if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
-        return origin || '*'
+      if (origin && allowedOrigins.includes(origin)) {
+        return origin
       }
       return null
     },
@@ -41,7 +41,6 @@ app.use(
     allowHeaders: ['Content-Type', 'Authorization'],
   })
 )
-
 // 3. エラーハンドラ
 app.onError((err, c) => {
   console.error('★ サーバーエラー詳細:', err)

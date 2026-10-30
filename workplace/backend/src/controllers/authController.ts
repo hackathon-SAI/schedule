@@ -80,8 +80,8 @@ export const AuthController = {
 
       setCookie(c, 'token', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'Lax',
+        secure: true,
+        sameSite: 'None',
         path: '/',
         maxAge: 60 * 60 * 24,
       })
@@ -107,8 +107,8 @@ export const AuthController = {
   async logout(c: AppContext) {
     deleteCookie(c, 'token', {
       path: '/',
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      secure: true,
+      sameSite: 'None',
     })
     return c.json({ message: 'ログアウトしました' })
   },
