@@ -60,7 +60,7 @@ app.route('/api/groups', groupRoutes)
 app.route('/api/users', authRoutes)
 
 // 5. ローカル開発用サーバー起動
-if (process.env.NODE_ENV !== 'production') {
+if (!process.env.VERCEL && process.env.NODE_ENV !== 'production') {
   const port = Number(process.env.PORT) || 5000
   serve(
     {

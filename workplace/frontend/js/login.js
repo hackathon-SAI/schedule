@@ -36,7 +36,7 @@ function initGoogleAuth() {
         return;
       }
 
-      console.log('1. Googleから認可コードを取得しました。バックエンドに送信します...', response.code);
+      console.log('1. Googleから認可コードを取得しました。バックエンドに送信します...');
 
       try {
         console.log('2. fetch を開始します:', `${API_BASE_URL}/api/auth/google`);
