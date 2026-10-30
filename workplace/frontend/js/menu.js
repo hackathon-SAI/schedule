@@ -22,7 +22,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // メニュー開閉
   if (menuButton && menuPanel) {
     menuButton.addEventListener("click", () => {
-      menuPanel.classList.toggle("active");
+      const isOpen = menuPanel.classList.toggle("active");
+      menuButton.setAttribute("aria-expanded", String(isOpen));
+      menuButton.setAttribute(
+        "aria-label",
+        isOpen ? "メニューを閉じる" : "メニューを開く"
+      );
     });
   }
 
@@ -48,6 +53,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // メニューパネルを閉じる
     if (menuPanel) {
       menuPanel.classList.remove("active");
+    }
+    if (menuButton) {
+      menuButton.setAttribute("aria-expanded", "false");
+      menuButton.setAttribute("aria-label", "メニューを開く");
     }
   }
 
