@@ -12,6 +12,16 @@ export interface User {
 }
 
 export const UserModel = {
+  async findById(id: string | number): Promise<User | null> {
+    const result = await sql`
+      SELECT id, google_id, name, email, picture
+      FROM users
+      WHERE id = ${id}
+    `
+    if (result.length === 0) return null
+    return result[0] as User
+  },
+
   async findByGoogleId(googleId: string): Promise<User | null> {
     const result = await sql`SELECT * FROM users WHERE google_id = ${googleId}`
     if (result.length === 0) return null

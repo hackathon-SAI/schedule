@@ -103,6 +103,40 @@ header {
     margin: clamp(15px, 2vw, 30px);
 }
 
+.dashboard[hidden],
+.overlay-panel[hidden] {
+    display: none;
+}
+
+.overlay-panel {
+    margin: clamp(15px, 2vw, 30px);
+    padding: clamp(15px, 2vw, 30px);
+    background: white;
+    border-radius: clamp(15px, 1.5vw, 25px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, .08);
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #EEF0FF;
+    padding-bottom: 10px;
+}
+
+.panel-header h2 {
+    color: #6C63FF;
+}
+
+.closePanel {
+    border: none;
+    background: none;
+    color: #666;
+    font-size: 28px;
+    cursor: pointer;
+}
+
 .dashboard-card {
     flex: 1;
     background: white;

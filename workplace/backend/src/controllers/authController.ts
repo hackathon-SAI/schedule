@@ -101,7 +101,20 @@ export const AuthController = {
     if (!payload) {
       return c.json({ error: '未認証のユーザーです' }, 401)
     }
-    return c.json({ user: payload })
+
+    const user = await UserModel.findById(payload.id)
+    if (!user) {
+      return c.json({ error: 'ユーザーが見つかりません' }, 404)
+    }
+
+    return c.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        picture: user.picture,
+      },
+    })
   },
 
   async logout(c: AppContext) {
