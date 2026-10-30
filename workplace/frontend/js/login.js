@@ -12,7 +12,7 @@ function initGoogleAuth() {
   }
 
   codeClient = google.accounts.oauth2.initCodeClient({
-    client_id: '1067955587484-jiuifljib05r35bfj25orgjucl2ctjbe.apps.googleusercontent.com',
+    client_id: '1067955587484-appns84s4nb5t13797i53ur56e7ng49f.apps.googleusercontent.com',
     scope: [
       'openid',
       'email',
