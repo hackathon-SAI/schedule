@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const menuButton = document.getElementById("menuButton");
   const menuPanel = document.getElementById("menuPanel");
 
+  const shareButton = document.getElementById("shareMenuButton");
   const calendarButton = document.getElementById("calendarMenuButton");
   const taskButton = document.getElementById("taskMenuButton");
   const scheduleButton = document.getElementById("scheduleMenuButton");
@@ -17,6 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const dashboard = document.querySelector(".dashboard");
   const taskPanel = document.getElementById("taskPanel");
   const schedulePanel = document.getElementById("schedulePanel");
+  const groupPanel = document.getElementById("groupPanel");
 
   // メニュー開閉
   if (menuButton && menuPanel) {
@@ -40,6 +42,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (schedulePanel) {
       schedulePanel.hidden = targetPanel !== schedulePanel;
     }
+    if (groupPanel) {
+      groupPanel.hidden = targetPanel !== groupPanel;
+    }
     // メニューパネルを閉じる
     if (menuPanel) {
       menuPanel.classList.remove("active");
@@ -48,6 +53,12 @@ document.addEventListener("DOMContentLoaded", () => {
       menuButton.setAttribute("aria-expanded", "false");
       menuButton.setAttribute("aria-label", "メニューを開く");
     }
+  }
+
+  if (shareButton) {
+    shareButton.addEventListener("click", () => {
+      showDashboardPanel(groupPanel);
+    });
   }
 
   // カレンダー表示

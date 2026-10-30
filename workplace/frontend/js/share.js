@@ -3,25 +3,30 @@ const API_BASE_URL = window.API_BASE_URL;
 
 document.addEventListener('DOMContentLoaded', () => {
   const groupNameInput = document.getElementById('groupName');
-  const nicknameInput = document.getElementById('nickname');
   const inviteCodeInput = document.getElementById('inviteCode');
   const createButton = document.getElementById('createGroupButton');
   const joinButton = document.getElementById('joinGroupButton');
   const shareMessage = document.getElementById('shareMessage');
   const groupInfo = document.getElementById('groupInfo');
+  const groupDetails = document.getElementById('groupDetails');
+  const groupTitle = document.getElementById('groupTitle');
+  const groupRole = document.getElementById('groupRole');
+  const groupInviteCode = document.getElementById('groupInviteCode');
+  const groupMembers = document.getElementById('groupMembers');
+  const groupEvents = document.getElementById('groupEvents');
+  const copyInviteCodeButton = document.getElementById('copyGroupInviteCode');
+  let groupDetailsRequestId = 0;
 
   document.getElementById('shareMenuButton')?.addEventListener('click', () => {
-    document.querySelectorAll('.view-section').forEach((view) => {
-      view.style.display = 'none';
-    });
-
-    const shareView = document.getElementById('shareView');
-    if (shareView) shareView.style.display = 'block';
-
     loadGroups();
     const menuPanel = document.getElementById('menuPanel');
     if (menuPanel) {
       menuPanel.classList.remove('active');
+    }
+    const menuButton = document.getElementById('menuButton');
+    if (menuButton) {
+      menuButton.setAttribute('aria-expanded', 'false');
+      menuButton.setAttribute('aria-label', 'メニューを開く');
     }
   });
 
@@ -75,10 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         button.addEventListener('click', () => {
           showGroup(group);
-
-          if (shareMessage) {
-            shareMessage.textContent = `${group.name} を選択しました。`;
-          }
+          loadGroupDetails(group.id);
         });
 
         list.appendChild(button);
@@ -88,6 +90,19 @@ document.addEventListener('DOMContentLoaded', () => {
       if (oldList) oldList.remove();
 
       groupInfo.prepend(list);
+
+      const selectedGroupId = localStorage.getItem('selectedGroupId');
+      const selectedGroup = groups.find(
+        (group) => String(group.id) === selectedGroupId
+      );
+      if (selectedGroup) {
+        await loadGroupDetails(selectedGroup.id);
+      } else if (selectedGroupId) {
+        localStorage.removeItem('selectedGroupId');
+        localStorage.removeItem('selectedGroupName');
+        groupDetails.hidden = true;
+        refreshGroupData();
+      }
     } catch (error) {
       console.error('グループ一覧の取得エラー:', error);
       if (shareMessage) shareMessage.textContent = error.message;
@@ -100,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof window.updateDashboard === 'function') window.updateDashboard();
   }
 
-  function showGroup(group, nickname = '') {
+  function showGroup(group) {
     if (!group || group.id == null) {
       throw new Error('グループ情報を取得できませんでした。');
     }
@@ -111,45 +126,148 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('selectedGroupId', String(group.id));
     localStorage.setItem('selectedGroupName', name);
 
-    if (groupInfo) {
-      groupInfo.querySelectorAll(':scope > :not(#groupList)').forEach(el => el.remove());
-
-      const title = document.createElement('h3');
-      title.textContent = name;
-      groupInfo.appendChild(title);
-
-      if (nickname) {
-        const nicknameText = document.createElement('p');
-        nicknameText.textContent = `ニックネーム：${nickname}`;
-        groupInfo.appendChild(nicknameText);
-      }
-
-      const codeText = document.createElement('p');
-      codeText.textContent = `招待コード：${code || '取得できませんでした'}`;
-      groupInfo.appendChild(codeText);
-
-      if (code) {
-        const copyButton = document.createElement('button');
-        copyButton.type = 'button';
-        copyButton.textContent = '招待コードをコピー';
-
-        copyButton.addEventListener('click', async () => {
-          try {
-            await navigator.clipboard.writeText(code);
-            if (shareMessage) shareMessage.textContent = '招待コードをコピーしました。';
-          } catch {
-            if (shareMessage) {
-              shareMessage.textContent = `招待コード：${code}（手動でコピーしてください）`;
-            }
-          }
-        });
-
-        groupInfo.appendChild(copyButton);
-      }
-    }
-
+    if (groupTitle) groupTitle.textContent = name;
+    if (groupInviteCode) groupInviteCode.textContent = `招待コード：${code || '取得できませんでした'}`;
+    if (groupDetails) groupDetails.hidden = false;
+    if (shareMessage) shareMessage.textContent = `${name} を選択しました。`;
     refreshGroupData();
   }
+
+  async function loadGroupDetails(groupId) {
+    const requestId = ++groupDetailsRequestId;
+    try {
+      const [detailData, eventData] = await Promise.all([
+        apiRequest(`/api/groups/${encodeURIComponent(groupId)}`),
+        apiRequest(`/api/groups/${encodeURIComponent(groupId)}/events`),
+      ]);
+
+      if (
+        requestId !== groupDetailsRequestId ||
+        localStorage.getItem('selectedGroupId') !== String(groupId)
+      ) {
+        return;
+      }
+
+      const group = detailData.group;
+      if (!group || !Array.isArray(detailData.members)) {
+        throw new Error('グループ概要の形式が正しくありません。');
+      }
+
+      showGroup(group);
+      if (groupRole) {
+        const role = group.role || 'member';
+        groupRole.textContent = `あなたの権限：${role === 'admin' ? '管理者' : 'メンバー'}`;
+      }
+      if (groupInviteCode) {
+        groupInviteCode.textContent = `招待コード：${group.invite_code || '取得できませんでした'}`;
+      }
+      if (groupMembers) {
+        groupMembers.replaceChildren();
+        detailData.members.forEach((member) => {
+          const item = document.createElement('li');
+          const role = member.role === 'admin' ? '管理者' : 'メンバー';
+          item.textContent = `${member.name || member.email}（${role}）`;
+          groupMembers.appendChild(item);
+        });
+      }
+
+      renderGroupEvents(eventData.events);
+    } catch (error) {
+      console.error('グループ情報の取得に失敗しました:', error);
+      if (
+        requestId === groupDetailsRequestId &&
+        localStorage.getItem('selectedGroupId') === String(groupId) &&
+        shareMessage
+      ) {
+        shareMessage.textContent = error.message || 'グループ情報を読み込めませんでした。';
+      }
+    }
+  }
+
+  function renderGroupEvents(events) {
+    if (!groupEvents) return;
+    if (!Array.isArray(events)) {
+      throw new Error('予定一覧の形式が正しくありません。');
+    }
+
+    groupEvents.replaceChildren();
+    const sortedEvents = events
+      .filter((event) => !(event.description || '').startsWith('[課題]'))
+      .sort(
+        (a, b) => new Date(a.start_time) - new Date(b.start_time)
+      );
+
+    if (sortedEvents.length === 0) {
+      const emptyMessage = document.createElement('p');
+      emptyMessage.textContent = '予定はありません。';
+      groupEvents.appendChild(emptyMessage);
+      return;
+    }
+
+    sortedEvents.forEach((event) => {
+      const card = document.createElement('article');
+      card.className = 'group-event-card';
+
+      const title = document.createElement('h4');
+      title.textContent = event.title || '名称未設定';
+      card.appendChild(title);
+
+      if (event.start_time) {
+        const start = new Date(event.start_time);
+        const time = document.createElement('p');
+        time.textContent = `📅 ${start.toLocaleString('ja-JP', {
+          timeZone: 'Asia/Tokyo',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+        })}`;
+        if (event.end_time) {
+          const end = new Date(event.end_time);
+          time.textContent += ` ～ ${end.toLocaleTimeString('ja-JP', {
+            timeZone: 'Asia/Tokyo',
+            hour: '2-digit',
+            minute: '2-digit',
+          })}`;
+        }
+        card.appendChild(time);
+      }
+
+      if (event.description) {
+        const description = document.createElement('p');
+        description.textContent = event.description.replace(/^\[予定\]\s*/, '');
+        card.appendChild(description);
+      }
+      groupEvents.appendChild(card);
+    });
+  }
+
+  document.querySelectorAll('[data-group-tab]').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const showEvents = tab.dataset.groupTab === 'events';
+      document.querySelectorAll('[data-group-tab]').forEach((item) => {
+        const active = item === tab;
+        item.classList.toggle('active', active);
+        item.setAttribute('aria-selected', String(active));
+      });
+      document.getElementById('groupOverview').hidden = showEvents;
+      document.getElementById('groupEventsView').hidden = !showEvents;
+    });
+  });
+
+  copyInviteCodeButton?.addEventListener('click', async () => {
+    const code = groupInviteCode?.textContent?.replace(/^招待コード：/, '');
+    if (!code || code === '取得できませんでした') return;
+
+    try {
+      await navigator.clipboard.writeText(code);
+      if (shareMessage) shareMessage.textContent = '招待コードをコピーしました。';
+    } catch (error) {
+      console.error('招待コードのコピーに失敗しました:', error);
+      if (shareMessage) shareMessage.textContent = `招待コード：${code}（手動でコピーしてください）`;
+    }
+  });
 
   createButton?.addEventListener('click', async () => {
     const name = groupNameInput?.value.trim();
@@ -168,10 +286,10 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       showGroup(data.group);
+      await loadGroupDetails(data.group.id);
+      await loadGroups();
 
       if (shareMessage) shareMessage.textContent = 'グループを作成しました！';
-
-      await loadGroups();
     } catch (error) {
       if (shareMessage) shareMessage.textContent = error.message;
     } finally {
@@ -181,12 +299,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   joinButton?.addEventListener('click', async () => {
     const inviteCode = inviteCodeInput?.value.trim();
-    const nickname = nicknameInput?.value.trim();
-
-    if (!nickname) {
-      if (shareMessage) shareMessage.textContent = 'ニックネームを入力してください。';
-      return;
-    }
 
     if (!inviteCode) {
       if (shareMessage) shareMessage.textContent = '招待コードを入力してください。';
@@ -201,13 +313,12 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify({ inviteCode }),
       });
 
-      showGroup(data.group, nickname);
-
+      showGroup(data.group);
+      await loadGroupDetails(data.group.id);
+      await loadGroups();
       if (shareMessage) {
         shareMessage.textContent = data.message || 'グループに参加しました！';
       }
-
-      await loadGroups();
     } catch (error) {
       if (shareMessage) shareMessage.textContent = error.message;
     } finally {

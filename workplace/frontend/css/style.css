@@ -137,6 +137,94 @@ header {
     cursor: pointer;
 }
 
+.group-form {
+    margin-bottom: 20px;
+}
+
+.group-form h3 {
+    margin-bottom: 12px;
+}
+
+#groupPanel label {
+    display: block;
+    margin: 12px 0 6px;
+}
+
+#groupPanel input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font: inherit;
+}
+
+#groupPanel button:not(.closePanel) {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    background: #6C63FF;
+    color: white;
+    cursor: pointer;
+}
+
+#groupPanel button:disabled {
+    opacity: .6;
+    cursor: wait;
+}
+
+#groupPanel hr {
+    margin: 20px 0;
+    border: 0;
+    border-top: 1px solid #e5e5e5;
+}
+
+#groupInfo button {
+    margin: 6px;
+}
+
+.group-tabs {
+    display: flex;
+    gap: 8px;
+    margin: 20px 0;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+#groupPanel .group-tab {
+    border-radius: 8px 8px 0 0;
+    background: #eef0ff;
+    color: #555;
+}
+
+#groupPanel .group-tab.active {
+    background: #6C63FF;
+    color: white;
+}
+
+.group-tab-content h3 {
+    margin: 16px 0 10px;
+}
+
+#groupMembers {
+    padding-left: 24px;
+}
+
+.group-event-card {
+    margin: 12px 0;
+    padding: 16px;
+    border-left: 4px solid #6C63FF;
+    border-radius: 8px;
+    background: #f6f7ff;
+}
+
+.group-event-card h4 {
+    margin-bottom: 6px;
+}
+
+.group-event-card p {
+    margin-top: 6px;
+    overflow-wrap: anywhere;
+}
+
 .dashboard-card {
     flex: 1;
     background: white;

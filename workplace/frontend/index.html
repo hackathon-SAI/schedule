@@ -21,7 +21,7 @@
 
     <nav>
       <a href="#features" class="nav-link">機能紹介</a>
-      <a href="login.html" class="login-button">
+      <a href="login.html" class="login-button" data-auth-link>
         ログイン
       </a>
     </nav>
@@ -50,7 +50,7 @@
           Webアプリです。
         </p>
 
-        <a href="login.html" class="start-button">
+        <a href="login.html" class="start-button" data-auth-link>
           ログインして始める
         </a>
 
@@ -117,7 +117,7 @@
         課題や予定の管理を始めましょう。
       </p>
 
-      <a href="login.html" class="start-button">
+      <a href="login.html" class="start-button" data-auth-link>
         ログイン
       </a>
 
@@ -141,6 +141,10 @@
     </nav>
 
   </footer>
+
+  <script>window.API_BASE_URL = "https://schedule-backend-navy.vercel.app";</script>
+  <script src="js/common-auth.js"></script>
+  <script src="js/landing.js"></script>
 
 </body>
 

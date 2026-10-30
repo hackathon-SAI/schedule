@@ -97,7 +97,7 @@ export const GroupController = {
     `
 
     return c.json({
-      group: result[0],
+      group: { ...result[0], role: access[0].role },
       members
     })
   },
@@ -116,7 +116,7 @@ export const GroupController = {
     }
 
     const found = await sql`
-      SELECT id, name FROM groups
+      SELECT id, name, invite_code FROM groups
       WHERE invite_code = ${inviteCode}
     `
 
