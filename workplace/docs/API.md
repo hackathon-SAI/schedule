@@ -4,6 +4,8 @@
 
 - `POST /api/auth/google`: Googleログイン
 - `GET /api/auth/me`: ログインユーザー情報取得
+- `PATCH /api/auth/me`: ログインユーザーのニックネーム更新
+  - リクエストボディ: `{ "name": "ニックネーム" }`（1〜50文字）
 - `POST /api/auth/logout`: ログアウト
 
 ## イベントAPI

@@ -31,14 +31,32 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   async function apiRequest(path, options = {}) {
-    const response = await fetch(`${API_BASE_URL}${path}`, {
-      ...options,
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-    });
+    let response;
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => {
+      controller.abort(new DOMException('Request timed out', 'TimeoutError'));
+    }, 15000);
+
+    try {
+      response = await fetch(`${API_BASE_URL}${path}`, {
+        ...options,
+        signal: controller.signal,
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+      });
+    } catch (error) {
+      console.error(`グループAPI通信エラー (${path}):`, error);
+      throw new Error(
+        error.name === 'AbortError' || error.name === 'TimeoutError'
+          ? '通信がタイムアウトしました。時間をおいてもう一度お試しください。'
+          : 'サーバーに接続できませんでした。通信環境を確認してもう一度お試しください。'
+      );
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
 
     const data = await response.json().catch(() => ({}));
 
@@ -191,55 +209,77 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     groupEvents.replaceChildren();
-    const sortedEvents = events
+    const tasks = events
+      .filter((event) => (event.description || '').startsWith('[課題]'))
+      .sort((a, b) => new Date(a.end_time) - new Date(b.end_time));
+    const schedules = events
       .filter((event) => !(event.description || '').startsWith('[課題]'))
-      .sort(
-        (a, b) => new Date(a.start_time) - new Date(b.start_time)
-      );
+      .sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
 
-    if (sortedEvents.length === 0) {
-      const emptyMessage = document.createElement('p');
-      emptyMessage.textContent = '予定はありません。';
-      groupEvents.appendChild(emptyMessage);
-      return;
-    }
+    [
+      { title: '課題', events: tasks, isTask: true },
+      { title: '予定', events: schedules, isTask: false },
+    ].forEach(({ title, events: items, isTask }) => {
+      const section = document.createElement('section');
+      section.className = 'group-event-section';
 
-    sortedEvents.forEach((event) => {
-      const card = document.createElement('article');
-      card.className = 'group-event-card';
+      const heading = document.createElement('h4');
+      heading.textContent = title;
+      section.appendChild(heading);
 
-      const title = document.createElement('h4');
-      title.textContent = event.title || '名称未設定';
-      card.appendChild(title);
+      if (items.length === 0) {
+        const emptyMessage = document.createElement('p');
+        emptyMessage.textContent = `${title}はありません。`;
+        section.appendChild(emptyMessage);
+      }
 
-      if (event.start_time) {
-        const start = new Date(event.start_time);
-        const time = document.createElement('p');
-        time.textContent = `📅 ${start.toLocaleString('ja-JP', {
-          timeZone: 'Asia/Tokyo',
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-        })}`;
-        if (event.end_time) {
-          const end = new Date(event.end_time);
-          time.textContent += ` ～ ${end.toLocaleTimeString('ja-JP', {
+      items.forEach((event) => {
+        const card = document.createElement('article');
+        card.className = 'group-event-card';
+
+        const eventTitle = document.createElement('h5');
+        eventTitle.textContent = event.title || '名称未設定';
+        card.appendChild(eventTitle);
+
+        const dateValue = isTask ? event.end_time : event.start_time;
+        if (dateValue) {
+          const date = new Date(dateValue);
+          const dateText = document.createElement('p');
+          const formattedDate = date.toLocaleDateString('ja-JP', {
             timeZone: 'Asia/Tokyo',
-            hour: '2-digit',
-            minute: '2-digit',
-          })}`;
-        }
-        card.appendChild(time);
-      }
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+          });
+          dateText.textContent = isTask ? `📅 提出期限：${formattedDate}` : `📅 ${formattedDate}`;
 
-      if (event.description) {
-        const description = document.createElement('p');
-        description.textContent = event.description.replace(/^\[予定\]\s*/, '');
-        card.appendChild(description);
-      }
-      groupEvents.appendChild(card);
+          if (!isTask && event.end_time) {
+            const end = new Date(event.end_time);
+            dateText.textContent += ` ${date.toLocaleTimeString('ja-JP', {
+              timeZone: 'Asia/Tokyo',
+              hour: '2-digit',
+              minute: '2-digit',
+            })} ～ ${end.toLocaleTimeString('ja-JP', {
+              timeZone: 'Asia/Tokyo',
+              hour: '2-digit',
+              minute: '2-digit',
+            })}`;
+          }
+          card.appendChild(dateText);
+        }
+
+        const description = (event.description || '')
+          .replace(/^\[(?:課題|予定)\]\s*/, '')
+          .trim();
+        if (description) {
+          const detail = document.createElement('p');
+          detail.textContent = description;
+          card.appendChild(detail);
+        }
+        section.appendChild(card);
+      });
+
+      groupEvents.appendChild(section);
     });
   }
 
@@ -274,10 +314,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!name) {
       if (shareMessage) shareMessage.textContent = 'グループ名を入力してください。';
+      groupNameInput?.focus();
       return;
     }
 
     createButton.disabled = true;
+    createButton.setAttribute('aria-busy', 'true');
+    createButton.textContent = '作成中...';
+    if (shareMessage) shareMessage.textContent = 'グループを作成しています...';
 
     try {
       const data = await apiRequest('/api/groups', {
@@ -291,9 +335,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (shareMessage) shareMessage.textContent = 'グループを作成しました！';
     } catch (error) {
-      if (shareMessage) shareMessage.textContent = error.message;
+      console.error('グループ作成に失敗しました:', error);
+      if (shareMessage) {
+        shareMessage.textContent = error.message || 'グループを作成できませんでした。';
+      }
     } finally {
       createButton.disabled = false;
+      createButton.removeAttribute('aria-busy');
+      createButton.textContent = 'グループ作成';
     }
   });
 

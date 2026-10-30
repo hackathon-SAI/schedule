@@ -21,6 +21,18 @@ authRoutes.post('/google', async (c) => {
 // ログイン中のユーザー情報取得
 authRoutes.get('/me', authCheck, (c) => AuthController.getMe(c))
 
+// プロフィールのニックネーム更新
+authRoutes.patch('/me', authCheck, async (c) => {
+  const body = await c.req.json().catch(() => ({}))
+  const name = typeof body.name === 'string' ? body.name.trim() : ''
+
+  if (!name || name.length > 50) {
+    return c.json({ error: 'ニックネームは1〜50文字で入力してください' }, 400)
+  }
+
+  return AuthController.updateMe(c, name)
+})
+
 // ログアウト
 authRoutes.post('/logout', (c) => AuthController.logout(c))
 

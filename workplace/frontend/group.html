@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>グループ | Study Planner</title>
+  <link rel="stylesheet" href="css/group.css">
+  <link rel="stylesheet" href="css/theme.css">
+  <script src="js/theme.js" defer></script>
+  <script>window.API_BASE_URL = "https://schedule-backend-navy.vercel.app";</script>
+</head>
+
+<body>
+  <header class="group-header">
+    <a class="brand" href="calendar.html">Study Planner</a>
+    <nav aria-label="メインメニュー">
+      <a href="calendar.html">カレンダーに戻る</a>
+      <a href="profile.html">プロフィール</a>
+    </nav>
+  </header>
+
+  <main class="group-page">
+    <header class="page-heading">
+      <div>
+        <p class="eyebrow">STUDY PLANNER</p>
+        <h1>グループ</h1>
+        <p>参加中のグループと、共有している課題・予定を確認できます。</p>
+      </div>
+    </header>
+
+    <nav class="group-view-tabs" role="tablist" aria-label="グループの表示">
+      <button type="button" class="view-tab active" role="tab" aria-selected="true" data-view="overview">
+        グループ一覧・概要
+      </button>
+      <button type="button" class="view-tab" role="tab" aria-selected="false" data-view="calendar" id="calendarViewTab" disabled>
+        カレンダー
+      </button>
+    </nav>
+
+    <section id="overviewView" class="group-view" role="tabpanel">
+      <div class="group-layout">
+        <aside class="group-sidebar">
+          <section class="group-card">
+            <h2>参加中のグループ</h2>
+            <p id="groupsMessage" class="muted" role="status" aria-live="polite">読み込み中...</p>
+            <ul id="groupsList" class="groups-list"></ul>
+          </section>
+
+          <details class="group-card group-actions">
+            <summary>グループを作成・参加</summary>
+            <form id="createGroupForm">
+              <label for="groupName">新しいグループ名</label>
+              <input id="groupName" name="name" maxlength="50" required placeholder="例：クラスの課題共有">
+              <button type="submit" id="createGroupButton">グループ作成</button>
+            </form>
+            <form id="joinGroupForm">
+              <label for="inviteCode">招待コード</label>
+              <input id="inviteCode" name="inviteCode" required autocomplete="off" placeholder="招待コードを入力">
+              <button type="submit" id="joinGroupButton">グループに参加</button>
+            </form>
+          </details>
+        </aside>
+
+        <div class="group-main">
+          <p id="groupMessage" class="group-message" role="status" aria-live="polite"></p>
+          <section id="groupEmptyState" class="group-card empty-state">
+            <h2>グループを選択してください</h2>
+            <p>参加中のグループを選ぶと、概要と共有中のタスク・予定が表示されます。</p>
+          </section>
+
+          <section id="groupOverview" class="group-card" hidden>
+            <div class="selected-group-heading">
+              <div>
+                <p class="eyebrow">選択中のグループ</p>
+                <h2 id="groupTitle"></h2>
+              </div>
+              <button type="button" id="copyInviteCode">招待コードをコピー</button>
+            </div>
+            <p id="groupRole" class="muted"></p>
+            <p id="groupInviteCode" class="invite-code"></p>
+
+            <h3>メンバー</h3>
+            <ul id="groupMembers" class="member-list"></ul>
+
+            <div class="shared-items">
+              <section>
+                <h3>タスク</h3>
+                <div id="groupTasks"></div>
+              </section>
+              <section>
+                <h3>予定</h3>
+                <div id="groupSchedules"></div>
+              </section>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section id="calendarView" class="group-view group-card" role="tabpanel" hidden>
+      <div class="calendar-heading">
+        <div>
+          <h2 id="calendarGroupTitle">グループのカレンダー</h2>
+          <p class="muted">この画面を開いたときにカレンダー機能を読み込みます。</p>
+        </div>
+      </div>
+      <p id="calendarMessage" class="group-message" role="status" aria-live="polite"></p>
+      <div id="groupCalendar"></div>
+    </section>
+  </main>
+
+  <script src="js/common-auth.js"></script>
+  <script src="js/group.js"></script>
+</body>
+
+</html>

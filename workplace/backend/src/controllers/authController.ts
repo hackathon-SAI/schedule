@@ -117,6 +117,28 @@ export const AuthController = {
     })
   },
 
+  async updateMe(c: AppContext, name: string) {
+    const payload = c.get('jwtPayload')
+    if (!payload) {
+      return c.json({ error: '未認証のユーザーです' }, 401)
+    }
+
+    const user = await UserModel.updateName(payload.id, name)
+    if (!user) {
+      return c.json({ error: 'ユーザーが見つかりません' }, 404)
+    }
+
+    return c.json({
+      message: 'ニックネームを更新しました',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        picture: user.picture,
+      },
+    })
+  },
+
   async logout(c: AppContext) {
     deleteCookie(c, 'token', {
       path: '/',

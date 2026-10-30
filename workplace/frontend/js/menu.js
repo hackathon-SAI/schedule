@@ -18,7 +18,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const dashboard = document.querySelector(".dashboard");
   const taskPanel = document.getElementById("taskPanel");
   const schedulePanel = document.getElementById("schedulePanel");
-  const groupPanel = document.getElementById("groupPanel");
 
   // メニュー開閉
   if (menuButton && menuPanel) {
@@ -42,9 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (schedulePanel) {
       schedulePanel.hidden = targetPanel !== schedulePanel;
     }
-    if (groupPanel) {
-      groupPanel.hidden = targetPanel !== groupPanel;
-    }
     // メニューパネルを閉じる
     if (menuPanel) {
       menuPanel.classList.remove("active");
@@ -57,7 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (shareButton) {
     shareButton.addEventListener("click", () => {
-      showDashboardPanel(groupPanel);
+      window.location.href = "group.html";
     });
   }
 

@@ -11,6 +11,8 @@
 
   <!-- CSS -->
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/theme.css">
+  <script src="js/theme.js" defer></script>
   <script>window.API_BASE_URL = "https://schedule-backend-navy.vercel.app";</script>
   <style>
     body {
@@ -162,62 +164,6 @@
     </div>
 
   </div>
-
-  <!-- =========================
-        グループ共有パネル
-    ========================= -->
-
-  <div id="groupPanel" class="overlay-panel" hidden>
-
-    <div class="panel-header">
-
-      <h2>👥 グループ共有</h2>
-
-      <button class="closePanel" data-panel="groupPanel" aria-label="閉じる">
-        ×
-      </button>
-
-    </div>
-
-    <div class="group-form">
-      <h3>グループを作成する</h3>
-      <label for="groupName">グループ名</label>
-      <input type="text" id="groupName" maxlength="50" placeholder="例：クラスの課題共有">
-      <button id="createGroupButton" type="button">グループ作成</button>
-    </div>
-
-    <hr>
-
-    <div class="group-form">
-      <h3>グループに参加する</h3>
-      <label for="inviteCode">招待コード</label>
-      <input type="text" id="inviteCode" placeholder="招待コードを入力">
-      <button id="joinGroupButton" type="button">グループに参加</button>
-    </div>
-
-    <p id="shareMessage" role="status" aria-live="polite"></p>
-    <div id="groupInfo"></div>
-    <section id="groupDetails" hidden aria-live="polite">
-      <nav class="group-tabs" role="tablist" aria-label="グループ情報">
-        <button type="button" class="group-tab active" role="tab" aria-selected="true" data-group-tab="overview">概要</button>
-        <button type="button" class="group-tab" role="tab" aria-selected="false" data-group-tab="events">予定一覧</button>
-      </nav>
-      <div id="groupOverview" class="group-tab-content">
-        <h3 id="groupTitle"></h3>
-        <p id="groupRole"></p>
-        <p id="groupInviteCode"></p>
-        <button id="copyGroupInviteCode" type="button">招待コードをコピー</button>
-        <h3>メンバー</h3>
-        <ul id="groupMembers"></ul>
-      </div>
-      <div id="groupEventsView" class="group-tab-content" hidden>
-        <h3>グループの予定</h3>
-        <div id="groupEvents"></div>
-      </div>
-    </section>
-
-  </div>
-
 
   <!-- =========================
             メイン画面
@@ -407,4 +353,3 @@
   <script src="js/app.js"></script>
   <script src="js/main.js"></script>
   <script src="js/menu.js"></script>
-  <script src="js/share.js"></script>
