@@ -33,6 +33,9 @@ authRoutes.patch('/me', authCheck, async (c) => {
   return AuthController.updateMe(c, name)
 })
 
+// 会員登録の削除
+authRoutes.delete('/me', authCheck, (c) => AuthController.deleteMe(c))
+
 // ログアウト
 authRoutes.post('/logout', (c) => AuthController.logout(c))
 

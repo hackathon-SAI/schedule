@@ -7,6 +7,7 @@
   <title>プロフィール | Study Planner</title>
   <link rel="stylesheet" href="css/profile.css">
   <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/account-menu.css">
   <script src="js/theme.js" defer></script>
   <script>window.API_BASE_URL = "https://schedule-backend-navy.vercel.app";</script>
 </head>
@@ -14,7 +15,25 @@
 <body>
   <header class="header">
     <h1>Study Planner</h1>
-    <a href="calendar.html" class="back-link">カレンダーに戻る</a>
+    <div class="profile-header-actions">
+      <a href="calendar.html" class="back-link">カレンダーに戻る</a>
+      <div id="accountMenu" class="account-menu">
+        <button id="accountMenuButton" class="account-menu-trigger" type="button" aria-label="アカウントメニューを開く" aria-controls="accountMenuPanel" aria-expanded="false">
+          <span id="accountAvatarInitial" aria-hidden="true">?</span>
+          <img id="accountAvatarImage" alt="" hidden>
+        </button>
+        <div id="accountMenuPanel" class="account-menu-panel" hidden>
+          <div class="account-menu-summary">
+            <strong id="accountMenuName"></strong>
+            <span id="accountMenuEmail"></span>
+          </div>
+          <a href="profile.html">アカウント詳細</a>
+          <button type="button" data-account-action="switch">別のアカウントでログイン</button>
+          <button type="button" data-account-action="logout">ログアウト</button>
+          <button type="button" class="account-menu-delete" data-account-action="delete">会員登録を解除</button>
+        </div>
+      </div>
+    </div>
   </header>
 
   <main class="profile-container">
@@ -36,10 +55,18 @@
       </form>
 
       <p id="profileMessage" role="status" aria-live="polite"></p>
+      <section class="account-actions" aria-labelledby="accountActionsTitle">
+        <h3 id="accountActionsTitle">アカウント</h3>
+        <button type="button" data-account-action="switch">別のアカウントでログイン</button>
+        <button type="button" data-account-action="logout">ログアウト</button>
+        <button type="button" class="account-menu-delete" data-account-action="delete">会員登録を解除</button>
+        <p>削除すると、あなたが作成した予定とアカウント情報は削除されます。グループは残り、管理者権限は他のメンバーに引き継がれます。</p>
+      </section>
     </section>
   </main>
 
   <script src="js/common-auth.js"></script>
+  <script src="js/account-menu.js"></script>
   <script src="js/profile.js"></script>
 </body>
 

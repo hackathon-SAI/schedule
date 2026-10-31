@@ -445,3 +445,29 @@ header {
         width: 220px;
     }
 }
+
+@media screen and (max-width: 600px) {
+    header {
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .logo {
+        min-width: 0;
+    }
+
+    .logo h1 {
+        font-size: 18px;
+        white-space: nowrap;
+    }
+
+    #clock {
+        display: none;
+    }
+
+    #addTaskButton,
+    #addScheduleButton {
+        padding: 7px 8px;
+        font-size: 12px;
+    }
+}

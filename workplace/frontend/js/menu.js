@@ -12,9 +12,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const calendarButton = document.getElementById("calendarMenuButton");
   const taskButton = document.getElementById("taskMenuButton");
   const scheduleButton = document.getElementById("scheduleMenuButton");
-  const profileButton = document.getElementById("profileMenuButton");
-  const logoutButton = document.getElementById("logoutButton");
-
   const dashboard = document.querySelector(".dashboard");
   const taskPanel = document.getElementById("taskPanel");
   const schedulePanel = document.getElementById("schedulePanel");
@@ -95,19 +92,6 @@ document.addEventListener("DOMContentLoaded", () => {
     closeButton.addEventListener("click", () => showDashboardPanel());
   });
 
-  if (profileButton) {
-    profileButton.addEventListener("click", () => {
-      window.location.href = "profile.html";
-    });
-  }
-
-  // ログアウト
-  if (logoutButton) {
-    logoutButton.addEventListener("click", async () => {
-      const result = confirm("ログアウトしますか？");
-      if (!result) return;
-    });
-  }
 })
 
 async function displaySchedules() {

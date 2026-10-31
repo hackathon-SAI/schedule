@@ -192,6 +192,25 @@ body {
   cursor: wait;
 }
 
+.danger-button {
+  padding: 10px 14px;
+  border: 1px solid #c62828;
+  border-radius: 8px;
+  background: white;
+  color: #b71c1c;
+  font: inherit;
+  cursor: pointer;
+}
+
+.danger-button:hover {
+  background: #fff3f3;
+}
+
+.danger-button:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
 .group-message {
   min-height: 1.5em;
   color: #5149d6;

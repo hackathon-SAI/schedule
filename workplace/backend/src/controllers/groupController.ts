@@ -135,6 +135,102 @@ export const GroupController = {
     return c.json({ message: 'グループに参加しました', group })
   },
 
+  // グループから脱退
+  async leave(c: Context<Env>) {
+    const userId = getUserId(c)
+    const groupId = Number(c.req.param('id'))
+
+    if (!Number.isInteger(groupId) || groupId <= 0) {
+      return c.json({ error: 'グループIDが不正です' }, 400)
+    }
+
+    const membership = await sql`
+      SELECT 1 FROM group_members
+      WHERE group_id = ${groupId} AND user_id = ${userId}
+    `
+
+    if (membership.length === 0) {
+      return c.json({ error: 'このグループに参加していません' }, 404)
+    }
+
+    await sql.transaction([
+      sql`SELECT id FROM groups WHERE id = ${groupId} FOR UPDATE`,
+      sql`
+        UPDATE group_members
+        SET role = 'admin'
+        WHERE group_id = ${groupId}
+          AND user_id = (
+            SELECT candidate.user_id
+            FROM group_members candidate
+            WHERE candidate.group_id = ${groupId}
+              AND candidate.user_id <> ${userId}
+            ORDER BY CASE WHEN candidate.role = 'admin' THEN 0 ELSE 1 END,
+              candidate.user_id
+            LIMIT 1
+          )
+          AND EXISTS (
+            SELECT 1 FROM group_members
+            WHERE group_id = ${groupId}
+              AND user_id = ${userId}
+              AND role = 'admin'
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM group_members
+            WHERE group_id = ${groupId}
+              AND user_id <> ${userId}
+              AND role = 'admin'
+          )
+      `,
+      sql`
+        UPDATE groups
+        SET created_by = (
+          SELECT candidate.user_id
+          FROM group_members candidate
+          WHERE candidate.group_id = ${groupId}
+            AND candidate.user_id <> ${userId}
+          ORDER BY CASE WHEN candidate.role = 'admin' THEN 0 ELSE 1 END,
+            candidate.user_id
+          LIMIT 1
+        )
+        WHERE id = ${groupId} AND created_by = ${userId}
+          AND EXISTS (
+            SELECT 1 FROM group_members
+            WHERE group_id = ${groupId} AND user_id <> ${userId}
+          )
+      `,
+      sql`
+        DELETE FROM group_members
+        WHERE group_id = ${groupId} AND user_id = ${userId}
+      `,
+      sql`
+        DELETE FROM events
+        WHERE group_id = ${groupId}
+          AND NOT EXISTS (
+            SELECT 1 FROM group_members WHERE group_id = ${groupId}
+          )
+      `,
+      sql`
+        DELETE FROM groups
+        WHERE id = ${groupId}
+          AND NOT EXISTS (
+            SELECT 1 FROM group_members WHERE group_id = ${groupId}
+          )
+      `,
+    ])
+
+    const remainingGroup = await sql`
+      SELECT id FROM groups WHERE id = ${groupId}
+    `
+    const groupDeleted = remainingGroup.length === 0
+
+    return c.json({
+      message: groupDeleted
+        ? '最後のメンバーとしてグループから脱退し、グループを削除しました'
+        : 'グループから脱退しました',
+      groupDeleted,
+    })
+  },
+
   // グループの共有イベント一覧
   async listEvents(c: Context<Env>) {
     const userId = getUserId(c)

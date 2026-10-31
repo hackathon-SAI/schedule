@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const createGroupButton = document.getElementById("createGroupButton");
   const joinGroupButton = document.getElementById("joinGroupButton");
   const copyInviteCodeButton = document.getElementById("copyInviteCode");
+  const leaveGroupButton = document.getElementById("leaveGroupButton");
 
   let groups = [];
   let selectedGroupId = null;
@@ -412,6 +413,34 @@ document.addEventListener("DOMContentLoaded", async () => {
     } catch (error) {
       console.error("招待コードのコピーに失敗しました:", error);
       setGroupMessage(`招待コード：${code}（手動でコピーしてください）`);
+    }
+  });
+
+  leaveGroupButton.addEventListener("click", async () => {
+    const group = groups.find((item) => String(item.id) === selectedGroupId);
+    if (!group) return;
+
+    const confirmed = window.confirm(
+      `「${group.name}」から脱退しますか？最後のメンバーの場合、グループと共有予定も削除されます。`
+    );
+    if (!confirmed) return;
+
+    leaveGroupButton.disabled = true;
+    setGroupMessage("グループから脱退しています...");
+    try {
+      const data = await apiRequest(
+        `/api/groups/${encodeURIComponent(group.id)}/leave`,
+        { method: "DELETE" }
+      );
+      localStorage.removeItem("selectedGroupId");
+      localStorage.removeItem("selectedGroupName");
+      setGroupMessage(data.message || "グループから脱退しました。");
+      await loadGroups();
+    } catch (error) {
+      console.error("グループ脱退に失敗しました:", error);
+      setGroupMessage(error.message || "グループから脱退できませんでした。", true);
+    } finally {
+      leaveGroupButton.disabled = false;
     }
   });
 

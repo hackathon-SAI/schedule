@@ -4,17 +4,32 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  background: #171922;
-  color: #e7e9f0;
+  --page-bg: #11131a;
+  --surface: #1b1e29;
+  --surface-raised: #232735;
+  --surface-muted: #2b3040;
+  --surface-hover: #343a4d;
+  --text-primary: #edf0f7;
+  --text-secondary: #b2b8c8;
+  --border-color: #3b4254;
+  --field-bg: #151822;
+  --accent: #aaa5ff;
+  --accent-strong: #8178ff;
+  --accent-surface: #302e49;
+  --danger: #ff9292;
+  --success: #82dda2;
+  --shadow-color: rgb(0 0 0 / 32%);
+  background: var(--page-bg);
+  color: var(--text-primary);
 }
 
 :root[data-theme="dark"] body {
-  background-color: #171922 !important;
-  color: #e7e9f0 !important;
+  background: var(--page-bg) !important;
+  color: var(--text-primary) !important;
 }
 
 :root[data-theme="dark"] :is(
-  header,
+  body > header,
   .site-header,
   .dashboard-card,
   .calendar-section,
@@ -30,13 +45,20 @@
   .legal-content,
   .contact-info
 ) {
-  background-color: #222531 !important;
-  color: #e7e9f0;
+  border-color: var(--border-color);
+  background-color: var(--surface) !important;
+  color: var(--text-primary);
+  box-shadow: 0 5px 20px var(--shadow-color);
 }
 
-:root[data-theme="dark"] :is(.cta, .task-card, .schedule-card, .group-event-card) {
-  background-color: #2a2e3c !important;
-  color: #e7e9f0;
+:root[data-theme="dark"] :is(
+  .task-card,
+  .schedule-card,
+  .shared-event-card,
+  .groups-list button
+) {
+  background-color: var(--surface-raised) !important;
+  color: var(--text-primary);
 }
 
 :root[data-theme="dark"] :is(
@@ -50,15 +72,37 @@
   h3,
   h4,
   h5,
+  legend,
   .nav-link,
   .login-description,
   .muted,
+  .legal-container,
   .legal-content,
   .legal-content h2,
   .legal-content h3,
-  .legal-header .last-updated
+  .legal-header .last-updated,
+  #clock,
+  .dashboard-card h3,
+  .closePanel,
+  .modal-header button
 ) {
-  color: #e7e9f0;
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] :is(
+  .muted,
+  .hero-description,
+  .section-description,
+  .login-description,
+  .legal-header .last-updated,
+  .shared-event-card p,
+  #clock
+) {
+  color: var(--text-secondary);
+}
+
+:root[data-theme="dark"] a:not(.login-button, .start-button, .back-link) {
+  color: var(--accent);
 }
 
 :root[data-theme="dark"] :is(
@@ -67,92 +111,120 @@
   textarea,
   .account-field dd
 ) {
-  border-color: #51576a !important;
-  background-color: #191c26 !important;
-  color: #f3f4f8 !important;
+  border-color: var(--border-color) !important;
+  background-color: var(--field-bg) !important;
+  color: var(--text-primary) !important;
 }
 
 :root[data-theme="dark"] :is(input, select, textarea)::placeholder {
-  color: #a7adbd;
+  color: var(--text-secondary);
+  opacity: 1;
 }
 
-:root[data-theme="dark"] #menuPanel button {
-  background-color: #303547;
-  color: #e7e9f0;
+:root[data-theme="dark"] :is(
+  input,
+  select,
+  textarea,
+  button,
+  a
+):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 
-:root[data-theme="dark"] #menuPanel button:hover {
-  background-color: #6C63FF;
-  color: white;
+:root[data-theme="dark"] :is(
+  .panel-header,
+  .group-tabs,
+  .group-view-tabs,
+  .legal-header,
+  .footer-links,
+  .task-section h2,
+  .shared-items h3,
+  #groupOverview > h3
+) {
+  border-color: var(--border-color);
 }
 
-:root[data-theme="dark"] .groups-list button {
-  border-color: #454a5b;
-  background-color: #2a2e3c;
-  color: #e7e9f0;
+:root[data-theme="dark"] :is(
+  .hero,
+  .cta,
+  .legal-header,
+  .account-field dd,
+  #menuPanel button,
+  .groups-list button
+) {
+  background: var(--surface-raised);
 }
 
-:root[data-theme="dark"] .groups-list button[aria-current="true"],
-:root[data-theme="dark"] .invite-code {
-  border-color: #756dff;
-  background-color: #343148;
-  color: #e7e9f0;
+:root[data-theme="dark"] :is(
+  .login-button,
+  .start-button,
+  #addTaskButton,
+  #addScheduleButton,
+  #saveTask,
+  #saveSchedule,
+  #saveNickname,
+  .group-actions button,
+  #copyInviteCode,
+  .back-link
+) {
+  color: #fff;
 }
 
-:root[data-theme="dark"] .shared-event-card {
-  border-color: #756dff;
-  background-color: #2a2e3c;
+:root[data-theme="dark"] :is(
+  .groups-list button[aria-current="true"],
+  .invite-code,
+  .group-view-tabs .view-tab.active,
+  .group-actions summary
+) {
+  border-color: var(--accent-strong);
+  background-color: var(--accent-surface);
+  color: var(--accent);
 }
 
-:root[data-theme="dark"] .shared-event-card p {
-  color: #c4c8d4;
+:root[data-theme="dark"] .group-message.error,
+:root[data-theme="dark"] .error-message {
+  color: var(--danger);
 }
 
-:root[data-theme="dark"] :is(.panel-header, .group-tabs, .legal-header) {
-  border-color: #454a5b;
-}
-
-:root[data-theme="dark"] .group-view-tabs {
-  border-color: #454a5b;
-}
-
-:root[data-theme="dark"] .view-tab {
-  color: #c4c8d4;
-}
-
-:root[data-theme="dark"] .view-tab.active {
-  color: #b5b0ff;
-}
-
-:root[data-theme="dark"] .shared-items h3,
-:root[data-theme="dark"] #groupOverview > h3 {
-  border-color: #454a5b;
-}
-
-:root[data-theme="dark"] .group-message.error {
-  color: #ff9a9a;
+:root[data-theme="dark"] #profileMessage {
+  color: var(--success);
 }
 
 :root[data-theme="dark"] .fc {
-  --fc-page-bg-color: #222531;
-  --fc-neutral-bg-color: #2a2e3c;
-  --fc-neutral-text-color: #e7e9f0;
-  --fc-border-color: #454a5b;
-  --fc-button-text-color: #f3f4f8;
-  --fc-button-bg-color: #44495b;
-  --fc-button-border-color: #555b70;
-  --fc-button-hover-bg-color: #5b6278;
-  --fc-button-hover-border-color: #6d748a;
-  --fc-button-active-bg-color: #6C63FF;
-  --fc-button-active-border-color: #6C63FF;
+  --fc-page-bg-color: var(--surface);
+  --fc-neutral-bg-color: var(--surface-raised);
+  --fc-neutral-text-color: var(--text-secondary);
+  --fc-border-color: var(--border-color);
+  --fc-button-text-color: var(--text-primary);
+  --fc-button-bg-color: var(--surface-muted);
+  --fc-button-border-color: var(--border-color);
+  --fc-button-hover-bg-color: var(--surface-hover);
+  --fc-button-hover-border-color: var(--accent);
+  --fc-button-active-bg-color: var(--accent-strong);
+  --fc-button-active-border-color: var(--accent-strong);
   --fc-event-text-color: #fff;
-  --fc-today-bg-color: rgb(108 99 255 / 14%);
-  color: #e7e9f0;
+  --fc-today-bg-color: rgb(129 120 255 / 14%);
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] :is(
+  .fc .fc-col-header-cell-cushion,
+  .fc .fc-daygrid-day-number,
+  .fc .fc-list-day-text,
+  .fc .fc-list-day-side-text
+) {
+  color: var(--text-primary);
 }
 
 :root[data-theme="dark"] footer {
-  background-color: #101117;
-  color: #e7e9f0;
+  background-color: #0c0e14;
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] footer a,
+:root[data-theme="dark"] .footer-links a {
+  color: var(--text-secondary);
 }
 
 .theme-toggle {
@@ -161,7 +233,7 @@
   bottom: 20px;
   z-index: 3000;
   padding: 10px 14px;
-  border: 1px solid #6C63FF;
+  border: 1px solid #6c63ff;
   border-radius: 999px;
   background: #fff;
   color: #4c45c5;
@@ -176,12 +248,13 @@
 }
 
 :root[data-theme="dark"] .theme-toggle {
-  background: #303547;
-  color: #f3f4f8;
+  border-color: var(--accent-strong);
+  background: var(--surface-muted);
+  color: var(--text-primary);
 }
 
 :root[data-theme="dark"] .theme-toggle:hover {
-  background: #41475b;
+  background: var(--surface-hover);
 }
 
 @media (max-width: 600px) {

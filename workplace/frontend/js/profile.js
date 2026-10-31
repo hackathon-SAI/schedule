@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const nicknameForm = document.getElementById("nicknameForm");
   const saveButton = document.getElementById("saveNickname");
   const message = document.getElementById("profileMessage");
+  const baseUrl = window.API_BASE_URL || "https://schedule-backend-navy.vercel.app";
   let user;
 
   function setMessage(text, isError = false) {
@@ -66,7 +67,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     setMessage("保存しています...");
 
     try {
-      const baseUrl = window.API_BASE_URL || "https://schedule-backend-navy.vercel.app";
       const response = await fetch(`${baseUrl}/api/auth/me`, {
         method: "PATCH",
         credentials: "include",
@@ -93,4 +93,5 @@ document.addEventListener("DOMContentLoaded", async () => {
       saveButton.disabled = false;
     }
   });
+
 });
