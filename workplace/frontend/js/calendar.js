@@ -22,7 +22,7 @@ function initializeCalendar() {
     timeZone: "Asia/Tokyo",
     themeSystem: "monarch",
     initialView: "dayGridMonth",
-    height: "100%",
+    height: "auto",
     handleWindowResize: true,
     selectable: true,
     navLinks: true,
@@ -60,7 +60,6 @@ function initializeCalendar() {
     eventDrop: saveEventDates,
     eventResize: saveEventDates,
     datesSet: updateCalendar,
-    expandRows: true,
     dayMaxEventRows: true,
   });
 
