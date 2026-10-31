@@ -19,6 +19,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // 認証成功後に画面を表示
   document.body.classList.add("authenticated");
+  requestAnimationFrame(() => {
+    if (window.calendar) {
+      window.calendar.updateSize();
+    }
+  });
 
   // ユーザー名を表示（要素がある場合のみ）
   const userNameElement =

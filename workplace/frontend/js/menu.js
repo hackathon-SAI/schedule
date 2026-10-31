@@ -14,7 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const scheduleButton = document.getElementById("scheduleMenuButton");
   const googleIntegrationsButton = document.getElementById("googleIntegrationsMenuButton");
   const googleIntegrations = document.getElementById("googleIntegrations");
-  const dashboard = document.querySelector(".dashboard");
   const taskPanel = document.getElementById("taskPanel");
   const schedulePanel = document.getElementById("schedulePanel");
 
@@ -31,14 +30,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function showDashboardPanel(targetPanel = null) {
-    if (dashboard) {
-      dashboard.hidden = Boolean(targetPanel);
-    }
     if (taskPanel) {
       taskPanel.hidden = targetPanel !== taskPanel;
     }
     if (schedulePanel) {
       schedulePanel.hidden = targetPanel !== schedulePanel;
+    }
+    if (googleIntegrations) {
+      googleIntegrations.hidden = targetPanel !== googleIntegrations;
     }
     // メニューパネルを閉じる
     if (menuPanel) {
@@ -92,13 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (googleIntegrationsButton && googleIntegrations) {
     googleIntegrationsButton.addEventListener("click", () => {
-      if (menuPanel) {
-        menuPanel.classList.remove("active");
-      }
-      if (menuButton) {
-        menuButton.setAttribute("aria-expanded", "false");
-        menuButton.setAttribute("aria-label", "メニューを開く");
-      }
+      showDashboardPanel(googleIntegrations);
       googleIntegrations.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   }
@@ -167,6 +160,7 @@ async function displaySchedules() {
         card.appendChild(memo);
       }
 
+      window.EventActions.addControls(card, schedule);
       scheduleList.appendChild(card);
     });
   } catch (error) {

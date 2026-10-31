@@ -111,13 +111,16 @@
 
   </section>
 
-  <section id="googleIntegrations" class="google-integrations" aria-labelledby="googleIntegrationsTitle">
+  <section id="googleIntegrations" class="google-integrations" aria-labelledby="googleIntegrationsTitle" hidden>
     <div class="google-integrations-heading">
       <div>
         <h2 id="googleIntegrationsTitle">Google連携</h2>
         <p>Classroomの課題やGoogleカレンダーの予定を取得し、選択したグループへ追加できます。</p>
       </div>
-      <button type="button" id="reauthorizeGoogleButton">Google連携を再認証</button>
+      <div class="google-integration-actions">
+        <button type="button" id="reauthorizeGoogleButton">Google連携を再認証</button>
+        <button type="button" class="closePanel" data-panel="googleIntegrations" aria-label="Google連携を閉じる">×</button>
+      </div>
     </div>
     <label for="googleImportGroup">追加先グループ</label>
     <select id="googleImportGroup">

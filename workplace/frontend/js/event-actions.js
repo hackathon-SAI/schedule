@@ -35,7 +35,6 @@ window.EventActions = (() => {
   }
 
   const titleField = createField("タイトル", "text", "eventEditName");
-  const dateField = createField("期限", "date", "eventEditDate");
   const startField = createField("開始日時", "datetime-local", "eventEditStart");
   const endField = createField("終了日時", "datetime-local", "eventEditEnd");
   const memoField = createField("メモ・内容", "textarea", "eventEditMemo");
@@ -64,7 +63,6 @@ window.EventActions = (() => {
   form.append(
     header,
     titleField.label,
-    dateField.label,
     startField.label,
     endField.label,
     memoField.label,
@@ -75,7 +73,6 @@ window.EventActions = (() => {
   document.body.appendChild(dialog);
 
   const titleInput = titleField.input;
-  const dateInput = dateField.input;
   const startInput = startField.input;
   const endInput = endField.input;
   const memoInput = memoField.input;
@@ -91,13 +88,8 @@ window.EventActions = (() => {
     );
   }
 
-  function dateInTokyo(value) {
-    return new Intl.DateTimeFormat("sv-SE", {
-      timeZone: "Asia/Tokyo",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(new Date(value));
+  function roleForEvent(event, groupRole) {
+    return groupRole || groupRoles.get(String(event.group_id));
   }
 
   function dateTimeInTokyo(value) {
@@ -124,39 +116,36 @@ window.EventActions = (() => {
 
   function addControls(container, event, groupRole) {
     ready.then(() => {
-      if (!container.isConnected || !canManage(event, groupRole)) return;
+      const role = roleForEvent(event, groupRole);
+      if (!container.isConnected || !canManage(event, role)) return;
 
       const controls = document.createElement("div");
       controls.className = "event-action-buttons";
       controls.append(
-        makeActionButton("編集", "event-edit-button", () => open(event, groupRole)),
-        makeActionButton("削除", "event-delete-button", () => remove(event, groupRole))
+        makeActionButton("編集", "event-edit-button", () => open(event, role)),
+        makeActionButton("削除", "event-delete-button", () => remove(event, role))
       );
       container.appendChild(controls);
     });
   }
 
   function open(event, groupRole) {
-    if (!canManage(event, groupRole)) {
+    const role = roleForEvent(event, groupRole);
+    if (!canManage(event, role)) {
       window.alert("この予定・課題を編集する権限がありません。");
       return;
     }
 
     editingEvent = event;
-    editingGroupRole = groupRole || null;
+    editingGroupRole = role || null;
     const task = isTask(event);
     heading.textContent = task ? "課題を編集" : "予定を編集";
     titleInput.value = event.title || "";
-    dateInput.value = task ? dateInTokyo(event.end_time) : "";
-    startInput.value = task ? "" : dateTimeInTokyo(event.start_time);
-    endInput.value = task ? "" : dateTimeInTokyo(event.end_time);
-    dateInput.required = task;
-    startInput.required = !task;
-    endInput.required = !task;
+    startInput.value = dateTimeInTokyo(event.start_time);
+    endInput.value = dateTimeInTokyo(event.end_time);
+    startInput.required = true;
+    endInput.required = true;
     memoInput.value = String(event.description || "").replace(/^\[(?:課題|予定)\]\s*/, "");
-    dateField.label.hidden = !task;
-    startField.label.hidden = task;
-    endField.label.hidden = task;
     message.textContent = "";
     deleteButton.disabled = false;
     saveButton.disabled = false;
@@ -192,10 +181,15 @@ window.EventActions = (() => {
     if (typeof updateCalendar === "function") updateCalendar();
     if (typeof loadTasks === "function") loadTasks();
     if (typeof updateDashboard === "function") updateDashboard();
+    const schedulePanel = document.getElementById("schedulePanel");
+    if (schedulePanel && !schedulePanel.hidden && typeof displaySchedules === "function") {
+      displaySchedules();
+    }
   }
 
   async function remove(event, groupRole) {
-    if (!canManage(event, groupRole)) {
+    const role = roleForEvent(event, groupRole);
+    if (!canManage(event, role)) {
       window.alert("この予定・課題を削除する権限がありません。");
       return;
     }
@@ -227,22 +221,18 @@ window.EventActions = (() => {
       description,
     };
 
-    if (task) {
-      body.end_time = new Date(dateInput.value).toISOString();
-    } else {
-      const start = new Date(`${startInput.value}:00+09:00`);
-      const end = new Date(`${endInput.value}:00+09:00`);
-      if (
-        Number.isNaN(start.getTime()) ||
-        Number.isNaN(end.getTime()) ||
-        end <= start
-      ) {
-        message.textContent = "終了時刻は開始時刻より後に設定してください。";
-        return;
-      }
-      body.start_time = start.toISOString();
-      body.end_time = end.toISOString();
+    const start = new Date(`${startInput.value}:00+09:00`);
+    const end = new Date(`${endInput.value}:00+09:00`);
+    if (
+      Number.isNaN(start.getTime()) ||
+      Number.isNaN(end.getTime()) ||
+      end <= start
+    ) {
+      message.textContent = "終了日時は開始日時より後に設定してください。";
+      return;
     }
+    body.start_time = start.toISOString();
+    body.end_time = end.toISOString();
 
     saveButton.disabled = true;
     deleteButton.disabled = true;
@@ -290,6 +280,7 @@ window.EventActions = (() => {
   return {
     ready,
     canManage,
+    roleForEvent,
     open,
     remove,
     addControls,

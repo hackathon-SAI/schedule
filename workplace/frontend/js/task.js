@@ -23,24 +23,27 @@ async function loadTasks() {
     }
 
     if (!res.ok) {
-      console.error('課題の取得に失敗しました:', res.status);
-      return;
+      throw new Error(`課題一覧の取得に失敗しました (${res.status})。`);
     }
 
     const data = await res.json();
 
-    const tasks = (data.events || []).filter(event =>
-      (event.description || '').startsWith('[課題]')
-    );
+    if (!Array.isArray(data.events)) {
+      throw new Error('課題一覧の形式が正しくありません。');
+    }
+    const tasks = data.events
+      .filter(event => (event.description || '').startsWith('[課題]'))
+      .sort((a, b) => new Date(a.end_time) - new Date(b.end_time));
 
     renderTaskList(tasks);
   } catch (err) {
     console.error('課題取得エラー:', err);
+    renderTaskList([], '課題一覧を読み込めませんでした。');
   }
 }
 
 // 課題カードの表示
-function renderTaskList(tasks) {
+function renderTaskList(tasks, emptyMessage = '課題はありません。') {
   const container = document.getElementById('taskList');
   if (!container) return;
 
@@ -48,7 +51,7 @@ function renderTaskList(tasks) {
 
   if (tasks.length === 0) {
     const message = document.createElement('p');
-    message.textContent = '課題はありません。';
+    message.textContent = emptyMessage;
     container.appendChild(message);
     return;
   }
@@ -58,16 +61,28 @@ function renderTaskList(tasks) {
     card.className = 'task-card';
 
     const title = document.createElement('h3');
-    title.textContent = task.title;
+    title.textContent = task.title || 'タイトルなし';
 
+    const start = document.createElement('p');
+    start.textContent = `🕐 開始: ${task.start_time
+      ? new Date(task.start_time).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })
+      : '未設定'
+      }`;
     const deadline = document.createElement('p');
     deadline.textContent = `📅 期限: ${task.end_time
-      ? new Date(task.end_time).toLocaleDateString('ja-JP')
+      ? new Date(task.end_time).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })
       : '未設定'
       }`;
 
     card.appendChild(title);
+    card.appendChild(start);
     card.appendChild(deadline);
+    const details = String(task.description || '').replace(/^\[課題\]\s*/, '').trim();
+    if (details) {
+      const description = document.createElement('p');
+      description.textContent = `📝 ${details}`;
+      card.appendChild(description);
+    }
     window.EventActions.addControls(card, task);
     container.appendChild(card);
   });

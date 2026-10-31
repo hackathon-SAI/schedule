@@ -9,6 +9,21 @@
   scroll-margin-top: 90px;
 }
 
+.google-integrations[hidden] {
+  display: none;
+}
+
+.google-integration-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.google-integration-actions .closePanel {
+  padding: 2px 8px;
+  font-size: 24px;
+}
+
 .google-integrations-heading,
 .google-source-heading {
   display: flex;
@@ -116,6 +131,7 @@
 :root[data-theme="dark"] .google-integrations {
   background: var(--surface);
   color: var(--text-primary);
+  border: 1px solid var(--border-color);
 }
 
 :root[data-theme="dark"] .google-integrations-heading p,

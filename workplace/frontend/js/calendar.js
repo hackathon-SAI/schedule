@@ -46,6 +46,7 @@ function initializeCalendar() {
     dayMaxEventRows: true,
   });
 
+  window.calendar = calendar;
   calendar.render();
   updateCalendar();
 }

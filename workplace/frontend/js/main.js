@@ -91,17 +91,20 @@ async function updateDashboard() {
     const data = await res.json();
     const events = Array.isArray(data.events) ? data.events : [];
 
-    // 全課題・予定の件数
+    const tasks = events.filter((event) =>
+      (event.description || "").startsWith("[課題]")
+    );
+
     if (taskCountEl) {
-      taskCountEl.textContent = events.length;
+      taskCountEl.textContent = tasks.length;
     }
 
-    // 今日が期限の課題・予定
+    // 今日が期限の課題
     const today = new Date().toLocaleDateString("sv-SE", {
       timeZone: "Asia/Tokyo",
     });
 
-    const todayEvents = events.filter((event) => {
+    const todayEvents = tasks.filter((event) => {
       if (!event.end_time) return false;
 
       const deadline = new Date(event.end_time).toLocaleDateString("sv-SE", {
@@ -116,7 +119,7 @@ async function updateDashboard() {
     }
 
     // 優先度「高」の件数
-    const highPriority = events.filter(
+    const highPriority = tasks.filter(
       (event) =>
         event.priority === "高" ||
         (event.description &&
