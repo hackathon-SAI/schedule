@@ -331,6 +331,7 @@ header {
 }
 
 #taskModal #taskTitle,
+#taskModal #taskGroupId,
 #scheduleModal #scheduleTitle {
     width: min(100%, 42ch);
 }
@@ -354,7 +355,6 @@ header {
     width: min(100%, 12ch);
 }
 
-#taskModal #taskGroupId,
 #scheduleModal #scheduleGroupId,
 #scheduleModal #scheduleMemo {
     width: 100%;

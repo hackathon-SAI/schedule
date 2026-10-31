@@ -271,11 +271,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (window.FullCalendar) return;
     if (!calendarScriptPromise) {
       calendarMessage.textContent = "カレンダーを読み込んでいます...";
-      const stylesheet = document.createElement("link");
-      stylesheet.rel = "stylesheet";
-      stylesheet.href = "https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/index.global.min.css";
-      document.head.appendChild(stylesheet);
-
       calendarScriptPromise = new Promise((resolve, reject) => {
         const script = document.createElement("script");
         script.src = "https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/index.global.min.js";
