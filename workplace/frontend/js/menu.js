@@ -47,6 +47,9 @@ document.addEventListener("DOMContentLoaded", () => {
       menuButton.setAttribute("aria-expanded", "false");
       menuButton.setAttribute("aria-label", "メニューを開く");
     }
+    if (targetPanel !== taskPanel && typeof updateDashboard === "function") {
+      updateDashboard();
+    }
   }
 
   if (shareButton) {
@@ -60,13 +63,11 @@ document.addEventListener("DOMContentLoaded", () => {
     calendarButton.addEventListener("click", () => {
       showDashboardPanel();
 
-      if (window.calendar) {
-        window.calendar.updateSize();
-      }
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth"
+      if (typeof updateCalendar === "function") updateCalendar();
+      const calendarSection = document.querySelector(".calendar-section");
+      requestAnimationFrame(() => {
+        if (window.calendar) window.calendar.updateSize();
+        calendarSection?.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     });
   }

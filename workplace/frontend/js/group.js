@@ -1,3 +1,11 @@
+function weekendClassNames(date) {
+  const weekday = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Tokyo",
+    weekday: "short",
+  }).format(date);
+  return weekday === "Sun" ? ["is-sun"] : weekday === "Sat" ? ["is-sat"] : [];
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   const groupsList = document.getElementById("groupsList");
   const groupsMessage = document.getElementById("groupsMessage");
@@ -271,13 +279,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (window.FullCalendar) return;
     if (!calendarScriptPromise) {
       calendarMessage.textContent = "カレンダーを読み込んでいます...";
-      calendarScriptPromise = new Promise((resolve, reject) => {
-        const script = document.createElement("script");
-        script.src = "https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/index.global.min.js";
-        script.onload = resolve;
-        script.onerror = () => reject(new Error("カレンダーを読み込めませんでした。通信環境を確認してください。"));
-        document.head.appendChild(script);
-      }).catch((error) => {
+      const scripts = [
+        "all/global.js",
+        "themes/monarch/global.js",
+        "locales/ja/global.js",
+      ];
+      calendarScriptPromise = scripts.reduce(
+        (previous, path) => previous.then(() => new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = `https://cdn.jsdelivr.net/npm/fullcalendar@7.1.2/${path}`;
+          script.onload = resolve;
+          script.onerror = () => reject(new Error("カレンダーを読み込めませんでした。通信環境を確認してください。"));
+          document.head.appendChild(script);
+        })),
+        Promise.resolve()
+      ).catch((error) => {
         calendarScriptPromise = null;
         throw error;
       });
@@ -314,6 +330,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         calendar = new window.FullCalendar.Calendar(calendarContainer, {
           locale: "ja",
           timeZone: "Asia/Tokyo",
+          themeSystem: "monarch",
           initialView: "dayGridMonth",
           height: "100%",
           expandRows: true,
@@ -322,9 +339,17 @@ document.addEventListener("DOMContentLoaded", async () => {
           headerToolbar: {
             left: "prev,next today",
             center: "title",
-            right: "dayGridMonth,timeGridWeek",
+            right: "dayGridMonth,timeGridWeek,listWeek",
           },
-          buttonText: { today: "今日", month: "月", week: "週" },
+          buttonText: {
+            today: "今日",
+            month: "月",
+            week: "週",
+            list: "リスト",
+            listWeek: "週一覧",
+          },
+          dayCellClassNames: (info) => weekendClassNames(info.date),
+          dayHeaderClassNames: (info) => weekendClassNames(info.date),
           eventClick: (info) => {
             window.EventActions.open(info.event.extendedProps, groups.find(
               (group) => String(group.id) === selectedGroupId

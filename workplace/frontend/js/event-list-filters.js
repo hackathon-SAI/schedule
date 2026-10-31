@@ -39,16 +39,10 @@ window.EventListFilters = (() => {
     currentUserId = userData.user.id;
   }
 
-  function createSortSelect(kind) {
+  function createSelect(className, ariaLabel, choices) {
     const select = document.createElement("select");
-    select.className = "event-list-sort";
-    select.setAttribute("aria-label", "並び順");
-    const choices = kind === "task"
-      ? [
-          ["deadline", "期限が近い順"],
-          ["priority", "優先順位：高を先に"],
-        ]
-      : [["start", "開始日時が近い順"]];
+    select.className = className;
+    select.setAttribute("aria-label", ariaLabel);
 
     choices.forEach(([value, label]) => {
       const option = document.createElement("option");
@@ -59,24 +53,53 @@ window.EventListFilters = (() => {
     return select;
   }
 
+  function addSelectControl(root, labelText, className, ariaLabel, choices) {
+    const select = createSelect(className, ariaLabel, choices);
+    const label = document.createElement("label");
+    label.className = "event-list-sort-label";
+    label.append(`${labelText} `, select);
+    root.appendChild(label);
+    return select;
+  }
+
   function initialize(kind, controlsId, onChange) {
     const root = document.getElementById(controlsId);
     if (!root) return Promise.resolve();
 
     const groupContainer = root.querySelector(".event-list-groups");
     const ownInput = root.querySelector(".event-list-own");
-    const sortSelect = createSortSelect(kind);
-    const sortLabel = document.createElement("label");
-    sortLabel.className = "event-list-sort-label";
-    sortLabel.append("並び順 ", sortSelect);
-    root.appendChild(sortLabel);
+    const sortSelect = addSelectControl(
+      root,
+      "並び順",
+      "event-list-sort",
+      "並び順",
+      kind === "task"
+        ? [
+            ["date-asc", "期限が近い順"],
+            ["date-desc", "期限が遅い順"],
+          ]
+        : [
+            ["date-asc", "開始日時が近い順"],
+            ["date-desc", "開始日時が遅い順"],
+          ]
+    );
+    const prioritySelect = kind === "task"
+      ? addSelectControl(root, "優先順位", "event-list-priority", "優先順位で絞り込み", [
+          ["all", "すべて"],
+          ["high", "高"],
+          ["medium", "中"],
+          ["low", "低"],
+          ["unset", "未設定"],
+        ])
+      : null;
 
-    const state = { groupContainer, ownInput, sortSelect, onChange };
+    const state = { groupContainer, ownInput, sortSelect, prioritySelect, onChange };
     states.set(kind, state);
 
     const refresh = () => onChange();
     ownInput.addEventListener("change", refresh);
     sortSelect.addEventListener("change", refresh);
+    prioritySelect?.addEventListener("change", refresh);
 
     if (!initialization) {
       initialization = loadMetadata();
@@ -120,6 +143,45 @@ window.EventListFilters = (() => {
     const selectedGroups = groups.filter((group) =>
       selectedIds.includes(String(group.id))
     );
+    let events = await fetchEventsForGroups(selectedGroups, kind);
+
+    if (state.ownInput.checked) {
+      events = events.filter((event) => String(event.created_by) === String(currentUserId));
+    }
+
+    const dateField = kind === "task" ? "end_time" : "start_time";
+    const priority = (event) => {
+      if (event.priority === "高" || /優先度\s*[:：]\s*高/.test(event.description || "")) {
+        return "high";
+      }
+      if (event.priority === "中" || /優先度\s*[:：]\s*中/.test(event.description || "")) {
+        return "medium";
+      }
+      if (event.priority === "低" || /優先度\s*[:：]\s*低/.test(event.description || "")) {
+        return "low";
+      }
+      return "unset";
+    };
+
+    if (kind === "task" && state.prioritySelect.value !== "all") {
+      events = events.filter((event) => priority(event) === state.prioritySelect.value);
+    }
+
+    const sortDirection = state.sortSelect.value === "date-desc" ? -1 : 1;
+    events.sort((left, right) =>
+      sortDirection *
+      (new Date(left[dateField]).getTime() - new Date(right[dateField]).getTime())
+    );
+    return events;
+  }
+
+  async function getAllEvents(kind) {
+    if (!states.has(kind)) throw new Error("一覧フィルターが初期化されていません。");
+    await initialization;
+    return fetchEventsForGroups(groups, kind);
+  }
+
+  async function fetchEventsForGroups(selectedGroups, kind) {
     const results = await Promise.all(selectedGroups.map(async (group) => {
       const response = await fetch(
         `${apiBaseUrl()}/api/events?groupId=${encodeURIComponent(group.id)}`,
@@ -142,30 +204,9 @@ window.EventListFilters = (() => {
       }));
     }));
 
-    let events = results.flat().filter((event) =>
+    return results.flat().filter((event) =>
       (event.description || "").startsWith(kind === "task" ? "[課題]" : "[予定]")
     );
-    if (state.ownInput.checked) {
-      events = events.filter((event) => String(event.created_by) === String(currentUserId));
-    }
-
-    const dateField = kind === "task" ? "end_time" : "start_time";
-    const priority = (event) => {
-      if (event.priority === "高") return 3;
-      if (/優先度\s*[:：]\s*高/.test(event.description || "")) return 3;
-      if (/優先度\s*[:：]\s*中/.test(event.description || "")) return 2;
-      if (/優先度\s*[:：]\s*低/.test(event.description || "")) return 1;
-      return 0;
-    };
-
-    events.sort((left, right) => {
-      if (kind === "task" && state.sortSelect.value === "priority") {
-        const priorityDifference = priority(right) - priority(left);
-        if (priorityDifference) return priorityDifference;
-      }
-      return new Date(left[dateField]).getTime() - new Date(right[dateField]).getTime();
-    });
-    return events;
   }
 
   function selectedGroupCount(kind) {
@@ -174,5 +215,5 @@ window.EventListFilters = (() => {
     return state.groupContainer.querySelectorAll('input[type="checkbox"]:checked').length;
   }
 
-  return { initialize, getEvents, selectedGroupCount };
+  return { initialize, getEvents, getAllEvents, selectedGroupCount };
 })();

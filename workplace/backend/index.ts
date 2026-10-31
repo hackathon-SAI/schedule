@@ -8,6 +8,7 @@ import { getJwtSecret } from './src/controllers/authController';
 import eventRoutes from './src/routes/eventRoutes'
 import authRoutes from './src/routes/authRoutes'
 import groupRoutes from './src/routes/groupRoutes'
+import holidayRoutes from './src/routes/holidayRoutes'
 
 // 起動時に JWT_SECRET の未設定・短すぎる値を検知して即失敗させる
 getJwtSecret()
@@ -57,6 +58,7 @@ app.onError((err, c) => {
 app.route('/api/events', eventRoutes)
 app.route('/api/auth', authRoutes)
 app.route('/api/groups', groupRoutes)
+app.route('/api/calendar/holidays', holidayRoutes)
 app.route('/api/users', authRoutes)
 
 // 5. ローカル開発用サーバー起動

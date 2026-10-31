@@ -15,6 +15,9 @@
   <link rel="stylesheet" href="css/account-menu.css">
   <link rel="stylesheet" href="css/event-actions.css">
   <link rel="stylesheet" href="css/google-imports.css">
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@7.1.2/skeleton.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@7.1.2/themes/monarch/theme.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@7.1.2/themes/monarch/palettes/purple.css" rel="stylesheet">
   <script src="js/theme.js" defer></script>
   <script>window.API_BASE_URL = "https://schedule-backend-navy.vercel.app";</script>
   <style>
@@ -149,10 +152,6 @@
 
   <div id="menuPanel">
 
-    <button id="shareMenuButton">
-      👥 グループ共有
-    </button>
-
     <button id="calendarMenuButton">
       📅 カレンダー
     </button>
@@ -163,6 +162,10 @@
 
     <button id="scheduleMenuButton">
       📅 予定一覧
+    </button>
+
+    <button id="shareMenuButton">
+      👥 グループ共有
     </button>
 
     <button id="googleIntegrationsMenuButton" type="button">
@@ -243,6 +246,7 @@
 
       <!-- ホーム画面 -->
       <section class="calendar-section">
+        <p id="calendarStatus" role="status" aria-live="polite"></p>
         <div id="calendar"></div>
       </section>
 
@@ -425,8 +429,10 @@
 
   <!-- JavaScript -->
 
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/index.global.min.js"></script>
-    <script src="js/calendar.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.1.2/all/global.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.1.2/themes/monarch/global.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.1.2/locales/ja/global.js"></script>
+  <script src="js/calendar.js"></script>
       <script src="js/event-actions.js"></script>
     <script src="js/event-creation.js"></script>
     <script src="js/event-duplicates.js"></script>

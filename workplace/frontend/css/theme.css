@@ -21,6 +21,19 @@
   --shadow-color: rgb(0 0 0 / 32%);
   background: var(--page-bg);
   color: var(--text-primary);
+  --fc-monarch-primary: #aaa5ff;
+  --fc-monarch-primary-foreground: #171326;
+  --fc-monarch-primary-over: #b9b5ff;
+  --fc-monarch-primary-down: #c8c4ff;
+  --fc-monarch-secondary: #39344f;
+  --fc-monarch-secondary-foreground: #e8e5ff;
+  --fc-monarch-background: var(--surface);
+  --fc-monarch-foreground: var(--text-primary);
+  --fc-monarch-border: var(--border-color);
+  --fc-monarch-strong-border: var(--surface-hover);
+  --fc-monarch-faint: rgb(255 255 255 / 5%);
+  --fc-monarch-muted: rgb(255 255 255 / 9%);
+  --fc-monarch-highlight: rgb(170 165 255 / 16%);
 }
 
 :root[data-theme="dark"] body {
@@ -95,6 +108,26 @@
   .modal-header button
 ) {
   color: var(--text-primary);
+}
+
+.fc .is-sun .fc-daygrid-day-number,
+.fc .fc-col-header-cell.is-sun .fc-col-header-cell-cushion {
+  color: #c62828;
+}
+
+.fc .is-sat .fc-daygrid-day-number,
+.fc .fc-col-header-cell.is-sat .fc-col-header-cell-cushion {
+  color: #1565c0;
+}
+
+:root[data-theme="dark"] .fc .is-sun .fc-daygrid-day-number,
+:root[data-theme="dark"] .fc .fc-col-header-cell.is-sun .fc-col-header-cell-cushion {
+  color: #ff9292;
+}
+
+:root[data-theme="dark"] .fc .is-sat .fc-daygrid-day-number,
+:root[data-theme="dark"] .fc .fc-col-header-cell.is-sat .fc-col-header-cell-cushion {
+  color: #8fc5ff;
 }
 
 :root[data-theme="dark"] :is(
@@ -186,7 +219,8 @@
   background: var(--surface-raised);
 }
 
-:root[data-theme="dark"] .event-list-sort {
+:root[data-theme="dark"] .event-list-sort,
+:root[data-theme="dark"] .event-list-priority {
   border-color: var(--border-color);
   background: var(--field-bg);
   color: var(--text-primary);

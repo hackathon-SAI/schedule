@@ -172,7 +172,8 @@ header {
     font-weight: bold;
 }
 
-.event-list-sort {
+.event-list-sort,
+.event-list-priority {
     max-width: 100%;
     padding: 8px 10px;
     border: 1px solid #cfd1dc;
