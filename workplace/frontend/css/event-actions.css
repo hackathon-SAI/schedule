@@ -1,0 +1,120 @@
+.event-edit-dialog {
+  width: min(520px, calc(100vw - 32px));
+  max-height: min(90dvh, 760px);
+  margin: auto;
+  padding: 0;
+  overflow: auto;
+  border: 0;
+  border-radius: 16px;
+  background: white;
+  color: #333;
+  box-shadow: 0 12px 40px rgb(0 0 0 / 24%);
+}
+
+.event-edit-dialog::backdrop {
+  background: rgb(17 19 26 / 55%);
+}
+
+.event-edit-form {
+  display: grid;
+  gap: 12px;
+  padding: 24px;
+}
+
+.event-edit-header,
+.event-edit-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.event-edit-header h2 {
+  margin: 0;
+  color: #5149d6;
+}
+
+.event-edit-form label {
+  display: grid;
+  gap: 6px;
+  font-weight: bold;
+}
+
+.event-edit-form input,
+.event-edit-form textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid #cfd1dc;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.event-edit-form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.event-edit-actions button {
+  padding: 10px 14px;
+  border: 1px solid #cfd1dc;
+  border-radius: 8px;
+  background: white;
+  color: #333;
+  font: inherit;
+  cursor: pointer;
+}
+
+.event-edit-actions .event-edit-save {
+  border-color: #6C63FF;
+  background: #6C63FF;
+  color: white;
+}
+
+.event-edit-actions .event-edit-delete {
+  margin-right: auto;
+  border-color: #c62828;
+  color: #b71c1c;
+}
+
+.event-edit-message {
+  min-height: 1.5em;
+  margin: 0;
+  color: #c62828;
+}
+
+.event-edit-dialog button:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
+:root[data-theme="dark"] .event-edit-dialog {
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] .event-edit-header h2 {
+  color: var(--accent);
+}
+
+:root[data-theme="dark"] .event-edit-form input,
+:root[data-theme="dark"] .event-edit-form textarea {
+  border-color: var(--border-color);
+  background: var(--field-bg);
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] .event-edit-actions button {
+  border-color: var(--border-color);
+  background: var(--surface-raised);
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] .event-edit-actions .event-edit-save {
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+}
+
+:root[data-theme="dark"] .event-edit-actions .event-edit-delete {
+  color: var(--danger);
+}

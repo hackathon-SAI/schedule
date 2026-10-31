@@ -44,6 +44,24 @@ export const UserModel = {
     return result[0] as User
   },
 
+  async findGoogleTokens(id: string | number): Promise<{
+    google_access_token: string | null
+    google_refresh_token: string | null
+    google_token_expires_at: number | null
+  } | null> {
+    const result = await sql`
+      SELECT google_access_token, google_refresh_token, google_token_expires_at
+      FROM users
+      WHERE id = ${id}
+    `
+    if (result.length === 0) return null
+    return result[0] as {
+      google_access_token: string | null
+      google_refresh_token: string | null
+      google_token_expires_at: number | null
+    }
+  },
+
   async findByGoogleId(googleId: string): Promise<User | null> {
     const result = await sql`SELECT * FROM users WHERE google_id = ${googleId}`
     if (result.length === 0) return null

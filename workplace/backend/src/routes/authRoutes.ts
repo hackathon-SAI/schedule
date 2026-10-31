@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { Env } from '../types/hono'
 import { AuthController } from '../controllers/authController'
 import { authCheck } from '../middleware/authMiddleware'
+import { GoogleDataController } from '../controllers/googleDataController'
 
 export const authRoutes = new Hono<Env>()
 
@@ -38,5 +39,12 @@ authRoutes.delete('/me', authCheck, (c) => AuthController.deleteMe(c))
 
 // ログアウト
 authRoutes.post('/logout', (c) => AuthController.logout(c))
+
+authRoutes.get('/google/classroom/coursework', authCheck, (c) =>
+  GoogleDataController.classroomCoursework(c)
+)
+authRoutes.get('/google/calendar/events', authCheck, (c) =>
+  GoogleDataController.calendarEvents(c)
+)
 
 export default authRoutes

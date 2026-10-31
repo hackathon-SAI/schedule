@@ -1,0 +1,156 @@
+.google-integrations {
+  display: grid;
+  gap: 16px;
+  margin: 0 clamp(15px, 2vw, 30px) 24px;
+  padding: clamp(16px, 2vw, 24px);
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 5px 15px rgb(0 0 0 / 8%);
+}
+
+.google-integrations-heading,
+.google-source-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.google-integrations h2,
+.google-source-heading h3 {
+  margin: 0;
+  color: #5149d6;
+}
+
+.google-integrations-heading p {
+  margin-top: 5px;
+  color: #626577;
+}
+
+.google-integrations label {
+  font-weight: bold;
+}
+
+#googleImportGroup {
+  width: min(100%, 42ch);
+  padding: 10px 12px;
+  border: 1px solid #cfd1dc;
+  border-radius: 8px;
+  background: white;
+  color: inherit;
+  font: inherit;
+}
+
+.google-integrations button {
+  flex: 0 0 auto;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: #6C63FF;
+  color: white;
+  font: inherit;
+  cursor: pointer;
+}
+
+.google-integrations button:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
+#reauthorizeGoogleButton {
+  border: 1px solid #cfd1dc;
+  background: white;
+  color: #5149d6;
+}
+
+.google-source-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.google-source-grid > section {
+  min-width: 0;
+}
+
+.google-source-message {
+  min-height: 1.5em;
+  margin: 8px 0;
+  color: #5149d6;
+}
+
+.google-source-message.error {
+  color: #b71c1c;
+}
+
+.google-import-list {
+  display: grid;
+  gap: 10px;
+}
+
+.google-import-card {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #e3e4ee;
+  border-radius: 10px;
+  background: #f8f8fc;
+  overflow-wrap: anywhere;
+}
+
+.google-import-card h4,
+.google-import-card p {
+  margin: 0;
+}
+
+.google-import-card p {
+  color: #626577;
+  white-space: pre-line;
+}
+
+.google-import-card a {
+  color: #5149d6;
+}
+
+:root[data-theme="dark"] .google-integrations {
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] .google-integrations-heading p,
+:root[data-theme="dark"] .google-import-card p {
+  color: var(--text-secondary);
+}
+
+:root[data-theme="dark"] .google-integrations h2,
+:root[data-theme="dark"] .google-source-heading h3,
+:root[data-theme="dark"] .google-source-message,
+:root[data-theme="dark"] .google-import-card a {
+  color: var(--accent);
+}
+
+:root[data-theme="dark"] #googleImportGroup,
+:root[data-theme="dark"] #reauthorizeGoogleButton {
+  border-color: var(--border-color);
+  background: var(--field-bg);
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] .google-import-card {
+  border-color: var(--border-color);
+  background: var(--surface-raised);
+}
+
+@media (max-width: 700px) {
+  .google-source-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .google-integrations-heading,
+  .google-source-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

@@ -125,12 +125,31 @@ export const GroupController = {
     }
 
     const group = found[0]
+    const membership = await sql`
+      SELECT 1 FROM group_members
+      WHERE group_id = ${group.id} AND user_id = ${userId}
+    `
 
-    await sql`
+    if (membership.length > 0) {
+      return c.json(
+        { error: `「${group.name}」にはすでに参加しています` },
+        409
+      )
+    }
+
+    const joined = await sql`
       INSERT INTO group_members (group_id, user_id, role)
       VALUES (${group.id}, ${userId}, 'member')
       ON CONFLICT (group_id, user_id) DO NOTHING
+      RETURNING group_id
     `
+
+    if (joined.length === 0) {
+      return c.json(
+        { error: `「${group.name}」にはすでに参加しています` },
+        409
+      )
+    }
 
     return c.json({ message: 'グループに参加しました', group })
   },

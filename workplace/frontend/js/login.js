@@ -3,6 +3,7 @@ const API_BASE_URL = "https://schedule-backend-navy.vercel.app";
 
 let codeClient;
 const selectAccount = new URLSearchParams(window.location.search).get('select_account') === 'true';
+const reauthorizeGoogle = new URLSearchParams(window.location.search).get('reauthorize_google') === 'true';
 
 // Google OAuth クライアントの初期化
 function initGoogleAuth() {
@@ -15,6 +16,8 @@ function initGoogleAuth() {
   codeClient = google.accounts.oauth2.initCodeClient({
     client_id: '1067955587484-appns84s4nb5t13797i53ur56e7ng49f.apps.googleusercontent.com',
     select_account: selectAccount,
+    access_type: 'offline',
+    ...(reauthorizeGoogle ? { prompt: 'consent' } : {}),
     scope: [
       'openid',
       'email',
@@ -23,6 +26,7 @@ function initGoogleAuth() {
       'https://www.googleapis.com/auth/classroom.courses.readonly',
       'https://www.googleapis.com/auth/userinfo.profile',
       'https://www.googleapis.com/auth/calendar.app.created',
+      'https://www.googleapis.com/auth/calendar.events.readonly',
       'https://www.googleapis.com/auth/calendar.events.freebusy',
       'https://www.googleapis.com/auth/calendar.freebusy',
       'https://www.googleapis.com/auth/classroom.announcements'

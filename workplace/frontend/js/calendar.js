@@ -19,7 +19,7 @@ function initializeCalendar() {
   calendar = new FullCalendar.Calendar(calendarEl, {
     locale: "ja",
     initialView: "dayGridMonth",
-    height: "auto",
+    height: "100%",
     selectable: true,
     navLinks: true,
     nowIndicator: true,
@@ -36,7 +36,14 @@ function initializeCalendar() {
     },
     dateClick: function (info) {
       showSchedule(info.dateStr);
-    }
+    },
+    eventClick: function (info) {
+      window.EventActions.ready.then(() => {
+        window.EventActions.open(info.event.extendedProps);
+      });
+    },
+    expandRows: true,
+    dayMaxEventRows: true,
   });
 
   calendar.render();
@@ -119,6 +126,7 @@ async function showSchedule(dateStr) {
   if (!scheduleList) return;
 
   try {
+    await window.EventActions.ready;
     const allEvents = await getGroupEvents();
 
     // 日本時間で指定日のイベントを抽出
@@ -174,6 +182,7 @@ async function showSchedule(dateStr) {
       div.appendChild(heading);
       if (description.textContent) div.appendChild(description);
       if (time.textContent) div.appendChild(time);
+      window.EventActions.addControls(div, event);
 
       scheduleList.appendChild(div);
     });

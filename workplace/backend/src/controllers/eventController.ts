@@ -91,7 +91,7 @@ export const EventController = {
       }
 
       // 作成者本人または管理者(admin)のみ更新可
-      if (existingEvent.created_by !== user.id && existingEvent.role !== 'admin') {
+      if (String(existingEvent.created_by) !== String(user.id) && existingEvent.role !== 'admin') {
         return c.json({ error: 'この予定を更新する権限がありません' }, 403)
       }
 
@@ -144,7 +144,7 @@ export const EventController = {
         return c.json({ error: '予定が見つかりません' }, 404)
       }
 
-      if (target.created_by !== user.id && target.role !== 'admin') {
+      if (String(target.created_by) !== String(user.id) && target.role !== 'admin') {
         return c.json({ error: 'この予定を削除する権限がありません' }, 403)
       }
 

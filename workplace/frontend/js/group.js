@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const joinGroupForm = document.getElementById("joinGroupForm");
   const createGroupButton = document.getElementById("createGroupButton");
   const joinGroupButton = document.getElementById("joinGroupButton");
+  const joinGroupMessage = document.getElementById("joinGroupMessage");
   const copyInviteCodeButton = document.getElementById("copyInviteCode");
   const leaveGroupButton = document.getElementById("leaveGroupButton");
 
@@ -27,10 +28,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   let calendar = null;
   let calendarScriptPromise = null;
   let selectionRequestId = 0;
+  let currentUser;
 
   try {
-    const user = await requireAuth();
-    if (!user) return;
+    currentUser = await requireAuth();
+    if (!currentUser) return;
+    await window.EventActions.ready;
   } catch (error) {
     console.error("ログイン状態の確認に失敗しました:", error);
     groupsMessage.textContent = "ログイン状態を確認できませんでした。";
@@ -73,7 +76,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       throw new Error("ログインの有効期限が切れています。再ログインしてください。");
     }
     if (!response.ok) {
-      throw new Error(data.error || data.message || "通信に失敗しました。");
+      const error = new Error(data.error || data.message || "通信に失敗しました。");
+      error.status = response.status;
+      throw error;
     }
     return data;
   }
@@ -81,6 +86,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   function setGroupMessage(text, isError = false) {
     groupMessage.textContent = text;
     groupMessage.classList.toggle("error", isError);
+  }
+
+  function setJoinGroupMessage(text, isError = false) {
+    joinGroupMessage.textContent = text;
+    joinGroupMessage.classList.toggle("error", isError);
   }
 
   function showEmptyState() {
@@ -122,7 +132,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  function renderEventSection(container, events, isTask) {
+  function renderEventSection(container, events, isTask, group) {
     container.replaceChildren();
     if (events.length === 0) {
       const empty = document.createElement("p");
@@ -164,6 +174,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         detail.textContent = description;
         card.appendChild(detail);
       }
+      window.EventActions.addControls(card, event, group.role);
       container.appendChild(card);
     });
   }
@@ -190,8 +201,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const schedules = events
       .filter((event) => !(event.description || "").startsWith("[課題]"))
       .sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
-    renderEventSection(groupTasks, tasks, true);
-    renderEventSection(groupSchedules, schedules, false);
+    renderEventSection(groupTasks, tasks, true, group);
+    renderEventSection(groupSchedules, schedules, false, group);
   }
 
   async function selectGroup(groupId) {
@@ -309,7 +320,9 @@ document.addEventListener("DOMContentLoaded", async () => {
           locale: "ja",
           timeZone: "Asia/Tokyo",
           initialView: "dayGridMonth",
-          height: "auto",
+          height: "100%",
+          expandRows: true,
+          dayMaxEventRows: true,
           nowIndicator: true,
           headerToolbar: {
             left: "prev,next today",
@@ -317,6 +330,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             right: "dayGridMonth,timeGridWeek",
           },
           buttonText: { today: "今日", month: "月", week: "週" },
+          eventClick: (info) => {
+            window.EventActions.open(info.event.extendedProps, groups.find(
+              (group) => String(group.id) === selectedGroupId
+            )?.role);
+          },
         });
         calendar.render();
       }
@@ -374,15 +392,23 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   joinGroupForm.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const inviteCode = document.getElementById("inviteCode").value.trim();
+    const inviteCode = document.getElementById("inviteCode").value.trim().toUpperCase();
     if (!inviteCode) {
-      setGroupMessage("招待コードを入力してください。", true);
+      setJoinGroupMessage("招待コードを入力してください。", true);
+      return;
+    }
+
+    const existingGroup = groups.find(
+      (group) => String(group.invite_code || "").toUpperCase() === inviteCode
+    );
+    if (existingGroup) {
+      setJoinGroupMessage(`「${existingGroup.name}」にはすでに参加しています。`);
       return;
     }
 
     joinGroupButton.disabled = true;
     joinGroupButton.textContent = "参加中...";
-    setGroupMessage("グループに参加しています...");
+    setJoinGroupMessage("グループに参加しています...");
     try {
       const data = await apiRequest("/api/groups/join", {
         method: "POST",
@@ -390,14 +416,28 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
       if (!data.group?.id) throw new Error("参加したグループ情報を取得できませんでした。");
       await loadGroups(data.group.id);
-      setGroupMessage(data.message || "グループに参加しました。");
+      setJoinGroupMessage(data.message || "グループに参加しました。");
       joinGroupForm.reset();
     } catch (error) {
+      if (error.status === 409) {
+        setJoinGroupMessage(error.message);
+        return;
+      }
       console.error("グループ参加に失敗しました:", error);
-      setGroupMessage(error.message || "グループに参加できませんでした。", true);
+      setJoinGroupMessage(error.message || "グループに参加できませんでした。", true);
     } finally {
       joinGroupButton.disabled = false;
       joinGroupButton.textContent = "グループに参加";
+    }
+  });
+
+  document.getElementById("inviteCode").addEventListener("input", () => {
+    setJoinGroupMessage("");
+  });
+
+  window.addEventListener("event-changed", (event) => {
+    if (String(event.detail?.groupId) === selectedGroupId) {
+      selectGroup(selectedGroupId);
     }
   });
 

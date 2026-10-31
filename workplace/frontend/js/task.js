@@ -1,6 +1,7 @@
 // 課題一覧の取得と表示
 async function loadTasks() {
   try {
+    await window.EventActions.ready;
     const groupId = localStorage.getItem('selectedGroupId');
 
     if (!groupId) {
@@ -67,6 +68,7 @@ function renderTaskList(tasks) {
 
     card.appendChild(title);
     card.appendChild(deadline);
+    window.EventActions.addControls(card, task);
     container.appendChild(card);
   });
 }
@@ -74,10 +76,11 @@ function renderTaskList(tasks) {
 // 課題の追加
 async function addTask(title, deadline, description) {
   try {
-    const groupId = localStorage.getItem('selectedGroupId');
+    await EventCreation.ready;
+    const groupId = EventCreation.selectedGroupId('taskGroupId');
 
     if (!groupId) {
-      alert('先にグループを作成するか、グループに参加してください。');
+      alert('課題の保存先グループを選択してください。');
       return false;
     }
 
@@ -94,6 +97,23 @@ async function addTask(title, deadline, description) {
       return false;
     }
 
+    const descriptionText = `[課題] ${description || ''}`;
+    let shouldCreate;
+    try {
+      shouldCreate = await confirmNoSimilarEvent({
+        groupId,
+        kind: 'task',
+        title,
+        description: descriptionText,
+        endTime: endTime.toISOString(),
+      });
+    } catch (err) {
+      console.error('課題の重複候補確認に失敗しました:', err);
+      alert(err.message || '重複候補を確認できませんでした。');
+      return false;
+    }
+    if (!shouldCreate) return false;
+
     const res = await fetch(`${API_BASE_URL}/api/events`, {
       method: 'POST',
       headers: {
@@ -103,7 +123,7 @@ async function addTask(title, deadline, description) {
       body: JSON.stringify({
         group_id: Number(groupId),
         title,
-        description: `[課題] ${description || ''}`,
+        description: descriptionText,
         start_time: startTime.toISOString(),
         end_time: endTime.toISOString(),
       }),
@@ -120,20 +140,12 @@ async function addTask(title, deadline, description) {
       return false;
     }
 
-    await loadTasks();
-
-    if (typeof updateDashboard === 'function') {
-      updateDashboard();
-    }
-
-    if (typeof updateCalendar === 'function') {
-      updateCalendar();
-    }
+    EventCreation.activateGroup(groupId);
 
     return true;
   } catch (err) {
-    console.error('通信エラー:', err);
-    alert('通信に失敗しました。');
+    console.error('課題の追加に失敗しました:', err);
+    alert(err.message || '通信に失敗しました。');
     return false;
   }
 }

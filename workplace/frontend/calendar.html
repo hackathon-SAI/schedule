@@ -13,6 +13,8 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/account-menu.css">
+  <link rel="stylesheet" href="css/event-actions.css">
+  <link rel="stylesheet" href="css/google-imports.css">
   <script src="js/theme.js" defer></script>
   <script>window.API_BASE_URL = "https://schedule-backend-navy.vercel.app";</script>
   <style>
@@ -107,6 +109,38 @@
 
     </div>
 
+  </section>
+
+  <section class="google-integrations" aria-labelledby="googleIntegrationsTitle">
+    <div class="google-integrations-heading">
+      <div>
+        <h2 id="googleIntegrationsTitle">Google連携</h2>
+        <p>Classroomの課題やGoogleカレンダーの予定を取得し、選択したグループへ追加できます。</p>
+      </div>
+      <button type="button" id="reauthorizeGoogleButton">Google連携を再認証</button>
+    </div>
+    <label for="googleImportGroup">追加先グループ</label>
+    <select id="googleImportGroup">
+      <option value="">グループを読み込み中...</option>
+    </select>
+    <div class="google-source-grid">
+      <section>
+        <div class="google-source-heading">
+          <h3>Classroomの課題</h3>
+          <button type="button" id="loadClassroomButton">課題を取得</button>
+        </div>
+        <p id="classroomMessage" class="google-source-message" role="status" aria-live="polite"></p>
+        <div id="classroomItems" class="google-import-list"></div>
+      </section>
+      <section>
+        <div class="google-source-heading">
+          <h3>Googleカレンダー</h3>
+          <button type="button" id="loadGoogleCalendarButton">予定を取得</button>
+        </div>
+        <p id="googleCalendarMessage" class="google-source-message" role="status" aria-live="polite"></p>
+        <div id="googleCalendarItems" class="google-import-list"></div>
+      </section>
+    </div>
   </section>
 
   <!-- =========================
@@ -221,6 +255,12 @@
 
     <input type="text" id="taskTitle" placeholder="課題名を入力">
 
+    <label for="taskGroupId">保存先グループ</label>
+
+    <select id="taskGroupId" required>
+      <option value="">グループを読み込み中...</option>
+    </select>
+
 
 
     <label>
@@ -306,6 +346,12 @@
 
     <input type="text" id="scheduleTitle" placeholder="予定名を入力">
 
+    <label for="scheduleGroupId">保存先グループ</label>
+
+    <select id="scheduleGroupId" required>
+      <option value="">グループを読み込み中...</option>
+    </select>
+
 
     <label>
 
@@ -357,6 +403,10 @@
 
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/index.global.min.js"></script>
     <script src="js/calendar.js"></script>
+      <script src="js/event-actions.js"></script>
+    <script src="js/event-creation.js"></script>
+    <script src="js/event-duplicates.js"></script>
+    <script src="js/google-imports.js"></script>
     <script src="js/task.js"></script>
     <script src="js/schedule.js"></script>
   <script src="js/common-auth.js"></script>

@@ -3,10 +3,11 @@
 // 予定の追加処理
 async function addSchedule(title, date, startTime, endTime, memo) {
   try {
-    const groupId = localStorage.getItem('selectedGroupId');
+    await EventCreation.ready;
+    const groupId = EventCreation.selectedGroupId('scheduleGroupId');
 
     if (!groupId) {
-      alert('先にグループを作成するか、グループに参加してください。');
+      alert('予定の保存先グループを選択してください。');
       return false;
     }
 
@@ -26,6 +27,24 @@ async function addSchedule(title, date, startTime, endTime, memo) {
       return false;
     }
 
+    const description = `[予定] ${memo || ''}`;
+    let shouldCreate;
+    try {
+      shouldCreate = await confirmNoSimilarEvent({
+        groupId,
+        kind: 'schedule',
+        title,
+        description,
+        startTime: startDate.toISOString(),
+        endTime: endDate.toISOString(),
+      });
+    } catch (err) {
+      console.error('予定の重複候補確認に失敗しました:', err);
+      alert(err.message || '重複候補を確認できませんでした。');
+      return false;
+    }
+    if (!shouldCreate) return false;
+
     const res = await fetch(`${API_BASE_URL}/api/events`, {
       method: 'POST',
       headers: {
@@ -35,7 +54,7 @@ async function addSchedule(title, date, startTime, endTime, memo) {
       body: JSON.stringify({
         group_id: Number(groupId),
         title,
-        description: `[予定] ${memo || ''}`,
+        description,
         start_time: startDate.toISOString(),
         end_time: endDate.toISOString(),
       }),
@@ -56,18 +75,12 @@ async function addSchedule(title, date, startTime, endTime, memo) {
       return false;
     }
 
-    if (typeof updateDashboard === 'function') {
-      updateDashboard();
-    }
-
-    if (typeof updateCalendar === 'function') {
-      updateCalendar();
-    }
+    EventCreation.activateGroup(groupId);
 
     return true;
   } catch (err) {
     console.error('予定追加エラー:', err);
-    alert('通信エラーが発生しました。');
+    alert(err.message || '通信エラーが発生しました。');
     return false;
   }
 }
