@@ -332,8 +332,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           timeZone: "Asia/Tokyo",
           themeSystem: "monarch",
           initialView: "dayGridMonth",
-          height: "100%",
-          expandRows: true,
+          height: "auto",
           dayMaxEventRows: true,
           nowIndicator: true,
           headerToolbar: {
@@ -359,7 +358,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         calendar.render();
       }
       renderCalendarEvents();
-      calendar.updateSize();
+      window.requestAnimationFrame(() => calendar?.updateSize());
       calendarMessage.textContent = "";
     } catch (error) {
       console.error("グループカレンダーの表示に失敗しました:", error);

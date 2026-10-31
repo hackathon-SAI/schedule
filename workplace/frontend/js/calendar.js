@@ -164,22 +164,10 @@ async function updateCalendar() {
     const extendedProps = { isHoliday: true, holidayName: holiday.name };
     calendar.addEvent({
       id: `holiday-background-${holiday.date}`,
-      title: holiday.name,
       start: holiday.date,
       end: endDate,
       display: "background",
       backgroundColor: "rgba(211, 47, 47, 0.16)",
-      editable: false,
-      extendedProps
-    });
-    calendar.addEvent({
-      id: `holiday-label-${holiday.date}`,
-      title: holiday.name,
-      start: holiday.date,
-      allDay: true,
-      backgroundColor: "#b42318",
-      borderColor: "#b42318",
-      textColor: "#fff",
       editable: false,
       extendedProps
     });
