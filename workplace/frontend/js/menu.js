@@ -107,16 +107,15 @@ async function displaySchedules() {
   if (!scheduleList) return;
 
   try {
-    const events = await getGroupEvents();
-    const schedules = events
-      .filter((event) => (event.description || "").startsWith("[予定]"))
-      .sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+    const schedules = await window.EventListFilters.getEvents("schedule");
 
     scheduleList.replaceChildren();
 
     if (schedules.length === 0) {
       const message = document.createElement("p");
-      message.textContent = "予定はありません。";
+      message.textContent = window.EventListFilters.selectedGroupCount("schedule") === 0
+        ? "表示するグループを選択してください。"
+        : "予定はありません。";
       scheduleList.appendChild(message);
       return;
     }
@@ -128,6 +127,11 @@ async function displaySchedules() {
       const title = document.createElement("h3");
       title.textContent = schedule.title || "";
       card.appendChild(title);
+
+      const group = document.createElement("p");
+      group.className = "event-list-group-name";
+      group.textContent = `👥 ${schedule.group_name || "グループ不明"}`;
+      card.appendChild(group);
 
       if (schedule.start_time) {
         const date = new Date(schedule.start_time);
@@ -171,3 +175,20 @@ async function displaySchedules() {
     scheduleList.appendChild(message);
   }
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  window.EventListFilters.initialize(
+    "schedule",
+    "scheduleListFilters",
+    displaySchedules
+  ).catch((error) => {
+    console.error("予定一覧フィルターの初期化に失敗しました:", error);
+    const scheduleList = document.getElementById("scheduleList");
+    if (scheduleList) {
+      scheduleList.replaceChildren();
+      const message = document.createElement("p");
+      message.textContent = "グループ一覧を読み込めませんでした。";
+      scheduleList.appendChild(message);
+    }
+  });
+});

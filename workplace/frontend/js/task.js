@@ -2,40 +2,13 @@
 async function loadTasks() {
   try {
     await window.EventActions.ready;
-    const groupId = localStorage.getItem('selectedGroupId');
-
-    if (!groupId) {
-      renderTaskList([]);
-      return;
-    }
-
-    const res = await fetch(
-      `${API_BASE_URL}/api/events?groupId=${encodeURIComponent(groupId)}`,
-      {
-        method: 'GET',
-        credentials: 'include',
-      }
+    const tasks = await window.EventListFilters.getEvents('task');
+    renderTaskList(
+      tasks,
+      window.EventListFilters.selectedGroupCount('task') === 0
+        ? '表示するグループを選択してください。'
+        : '課題はありません。'
     );
-
-    if (res.status === 401) {
-      window.location.href = 'login.html';
-      return;
-    }
-
-    if (!res.ok) {
-      throw new Error(`課題一覧の取得に失敗しました (${res.status})。`);
-    }
-
-    const data = await res.json();
-
-    if (!Array.isArray(data.events)) {
-      throw new Error('課題一覧の形式が正しくありません。');
-    }
-    const tasks = data.events
-      .filter(event => (event.description || '').startsWith('[課題]'))
-      .sort((a, b) => new Date(a.end_time) - new Date(b.end_time));
-
-    renderTaskList(tasks);
   } catch (err) {
     console.error('課題取得エラー:', err);
     renderTaskList([], '課題一覧を読み込めませんでした。');
@@ -63,6 +36,9 @@ function renderTaskList(tasks, emptyMessage = '課題はありません。') {
     const title = document.createElement('h3');
     title.textContent = task.title || 'タイトルなし';
 
+    const group = document.createElement('p');
+    group.className = 'event-list-group-name';
+    group.textContent = `👥 ${task.group_name || 'グループ不明'}`;
     const start = document.createElement('p');
     start.textContent = `🕐 開始: ${task.start_time
       ? new Date(task.start_time).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })
@@ -75,6 +51,7 @@ function renderTaskList(tasks, emptyMessage = '課題はありません。') {
       }`;
 
     card.appendChild(title);
+    card.appendChild(group);
     card.appendChild(start);
     card.appendChild(deadline);
     const details = String(task.description || '').replace(/^\[課題\]\s*/, '').trim();
@@ -172,7 +149,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const closeModal = document.getElementById('closeModal');
   const saveTaskButton = document.getElementById('saveTask');
 
-  loadTasks();
+  window.EventListFilters.initialize('task', 'taskListFilters', loadTasks)
+    .then(loadTasks)
+    .catch((error) => {
+      console.error('課題一覧フィルターの初期化に失敗しました:', error);
+      renderTaskList([], 'グループ一覧を読み込めませんでした。');
+    });
 
   if (addTaskButton && taskModal) {
     addTaskButton.addEventListener('click', () => {

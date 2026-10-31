@@ -20,6 +20,7 @@ function initializeCalendar() {
     locale: "ja",
     initialView: "dayGridMonth",
     height: "100%",
+    handleWindowResize: true,
     selectable: true,
     navLinks: true,
     nowIndicator: true,

@@ -121,6 +121,72 @@ header {
     box-shadow: 0 5px 15px rgba(0, 0, 0, .08);
 }
 
+.event-list-filters {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 12px 20px;
+    margin-bottom: 20px;
+    padding: 14px;
+    border: 1px solid #dfe1eb;
+    border-radius: 12px;
+    background: #f8f8fc;
+}
+
+.event-list-filters fieldset {
+    min-width: 0;
+    border: 0;
+}
+
+.event-list-filters legend {
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.event-list-groups {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+}
+
+.event-list-group-option,
+.event-list-own-option,
+.event-list-sort-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.event-list-group-option,
+.event-list-own-option {
+    cursor: pointer;
+}
+
+.event-list-group-option input,
+.event-list-own-option input {
+    accent-color: #6C63FF;
+}
+
+.event-list-sort-label {
+    flex-wrap: wrap;
+    font-weight: bold;
+}
+
+.event-list-sort {
+    max-width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #cfd1dc;
+    border-radius: 8px;
+    background: white;
+    color: inherit;
+    font: inherit;
+}
+
+.event-list-group-name {
+    color: #626577;
+    font-size: .92em;
+}
+
 .panel-header {
     display: flex;
     justify-content: space-between;
@@ -524,5 +590,14 @@ header {
 
     .header-right .account-menu {
         flex: 0 0 auto;
+    }
+
+    .event-list-filters {
+        grid-template-columns: 1fr;
+        align-items: start;
+    }
+
+    .event-list-sort-label {
+        justify-content: space-between;
     }
 }

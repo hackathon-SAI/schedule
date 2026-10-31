@@ -176,8 +176,20 @@
 
 :root[data-theme="dark"] .task-card p,
 :root[data-theme="dark"] .schedule-card p,
+:root[data-theme="dark"] .event-list-group-name,
 :root[data-theme="dark"] .event-edit-message {
   color: var(--text-secondary);
+}
+
+:root[data-theme="dark"] .event-list-filters {
+  border-color: var(--border-color);
+  background: var(--surface-raised);
+}
+
+:root[data-theme="dark"] .event-list-sort {
+  border-color: var(--border-color);
+  background: var(--field-bg);
+  color: var(--text-primary);
 }
 
 :root[data-theme="dark"] .event-action-buttons button {
