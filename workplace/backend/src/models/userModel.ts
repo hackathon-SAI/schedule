@@ -33,6 +33,17 @@ export const UserModel = {
     return result[0] as User
   },
 
+  async updatePicture(id: string | number, picture: string): Promise<User | null> {
+    const result = await sql`
+      UPDATE users
+      SET picture = ${picture}
+      WHERE id = ${id}
+      RETURNING id, google_id, name, email, picture
+    `
+    if (result.length === 0) return null
+    return result[0] as User
+  },
+
   async findByGoogleId(googleId: string): Promise<User | null> {
     const result = await sql`SELECT * FROM users WHERE google_id = ${googleId}`
     if (result.length === 0) return null

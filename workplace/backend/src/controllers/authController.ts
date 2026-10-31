@@ -4,6 +4,7 @@ import { setCookie, deleteCookie } from 'hono/cookie'
 import { sign } from 'hono/jwt'
 import { sql } from '../config/db'
 import { UserModel } from '../models/userModel'
+import { createProfileAvatar, isGeneratedProfileAvatar } from '../utils/profileAvatar'
 
 const googleClient = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
@@ -50,8 +51,6 @@ export const AuthController = {
       const googleId = payload.sub
       const email = payload.email!
       const name = payload.name || 'Google User'
-      const picture = payload.picture || ''
-
       // 3. ユーザー検索または新規登録
       let user = await UserModel.findByGoogleId(googleId)
       if (!user && email) {
@@ -59,7 +58,16 @@ export const AuthController = {
       }
 
       if (!user) {
-        user = await UserModel.createGoogleUser(googleId, name, email, picture)
+        user = await UserModel.createGoogleUser(googleId, name, email, '')
+      }
+
+      if (!isGeneratedProfileAvatar(user.picture)) {
+        const picture = createProfileAvatar(String(user.id))
+        const updatedUser = await UserModel.updatePicture(user.id, picture)
+        if (!updatedUser) {
+          throw new Error('ユーザーのプロフィール画像を保存できませんでした')
+        }
+        user = updatedUser
       }
 
       // 4. API連携用トークンを DB に格納
@@ -108,12 +116,22 @@ export const AuthController = {
       return c.json({ error: 'ユーザーが見つかりません' }, 404)
     }
 
+    let profile = user
+    if (!isGeneratedProfileAvatar(user.picture)) {
+      const picture = createProfileAvatar(String(user.id))
+      const updatedUser = await UserModel.updatePicture(user.id, picture)
+      if (!updatedUser) {
+        return c.json({ error: 'プロフィール画像を保存できませんでした' }, 500)
+      }
+      profile = updatedUser
+    }
+
     return c.json({
       user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        picture: user.picture,
+        id: profile.id,
+        name: profile.name,
+        email: profile.email,
+        picture: profile.picture,
       },
     })
   },
