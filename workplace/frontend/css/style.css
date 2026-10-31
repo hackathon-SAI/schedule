@@ -186,7 +186,7 @@ header {
 }
 
 #calendar {
-    height: clamp(360px, calc(100dvh - 320px), 680px);
+    height: clamp(360px, calc(100dvh - 400px), 520px);
     min-height: 0;
 }
 
@@ -466,7 +466,7 @@ header {
     }
 
     #calendar {
-        height: clamp(360px, calc(100dvh - 260px), 600px);
+        height: clamp(360px, calc(100dvh - 320px), 460px);
         min-height: 0;
     }
 

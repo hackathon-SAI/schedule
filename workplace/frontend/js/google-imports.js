@@ -56,6 +56,13 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
+  function formatCreatedAt(value) {
+    if (!value) return null;
+    const date = new Date(value);
+    if (!Number.isFinite(date.getTime())) return null;
+    return date.toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo" });
+  }
+
   function googleCalendarTimes(item) {
     if (!item.start || !item.end) return null;
     let start;
@@ -191,6 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await request("/api/auth/google/classroom/coursework");
       const items = (data.coursework || []).map((item) => {
         const deadline = formatClassroomDeadline(item);
+        const createdAt = formatCreatedAt(item.creationTime);
         const dueDateText = deadline
           ? `期限: ${deadline.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}`
           : "期限なし";
@@ -202,7 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const start = end ? new Date(end.getTime() - 60 * 1000) : null;
         return {
           title: item.title || "タイトルなし",
-          detail: `${item.courseName} ・ ${dueDateText}`,
+          detail: `${item.courseName} ・ ${createdAt ? `追加日: ${createdAt} ・ ` : ""}${dueDateText}`,
           description: item.description || "",
           url: item.alternateLink,
           canImport: Boolean(end),
@@ -217,7 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
         };
       });
       renderItems(classroomItems, items, "task");
-      setMessage(classroomMessage, `${items.length}件取得しました。`);
+      setMessage(classroomMessage, `${data.academicYear || "今年度"}の課題を${items.length}件取得しました。`);
     } catch (error) {
       console.error("Classroom課題の取得に失敗しました:", error);
       setMessage(classroomMessage, error.message || "Classroom課題を取得できませんでした。", true);
@@ -235,6 +243,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const items = (data.events || []).map((item) => {
         const times = googleCalendarTimes(item);
         const eventTitle = item.summary || "タイトルなし";
+        const createdAt = formatCreatedAt(item.created);
         const notes = [
           item.description,
           item.htmlLink ? `Google Calendar: ${item.htmlLink}` : "",
@@ -242,7 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return {
           title: eventTitle,
           detail: times
-            ? `${times.start.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })} ～ ${times.end.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}`
+            ? `${times.start.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })} ～ ${times.end.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}${createdAt ? ` ・ 追加日: ${createdAt}` : ""}`
             : "日時を読み取れません",
           description: item.description || "",
           url: item.htmlLink,
@@ -258,7 +267,7 @@ document.addEventListener("DOMContentLoaded", () => {
         };
       });
       renderItems(calendarItems, items, "schedule");
-      setMessage(calendarMessage, `${items.length}件取得しました。`);
+      setMessage(calendarMessage, `${data.academicYear || "今年度"}の予定を${items.length}件取得しました。`);
     } catch (error) {
       console.error("Googleカレンダー予定の取得に失敗しました:", error);
       setMessage(calendarMessage, error.message || "Googleカレンダーの予定を取得できませんでした。", true);

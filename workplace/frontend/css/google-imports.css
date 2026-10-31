@@ -6,6 +6,7 @@
   border-radius: 16px;
   background: white;
   box-shadow: 0 5px 15px rgb(0 0 0 / 8%);
+  scroll-margin-top: 90px;
 }
 
 .google-integrations-heading,

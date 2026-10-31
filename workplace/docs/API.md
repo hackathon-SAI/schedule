@@ -8,8 +8,8 @@
   - リクエストボディ: `{ "name": "ニックネーム" }`（1〜50文字）
 - `DELETE /api/auth/me`: 会員登録と本人が作成した予定を削除する。所属グループは残し、管理者権限とグループ作成者を他メンバーへ引き継ぐ。最後のメンバーとなるグループは共有予定とともに削除する
 - `POST /api/auth/logout`: ログアウト
-- `GET /api/auth/google/classroom/coursework`: ログイン中のGoogleアカウントが閲覧できるClassroomの公開済み課題一覧
-- `GET /api/auth/google/calendar/events`: Googleカレンダーの今後90日間の予定一覧（`timeMin` / `timeMax` で期間指定可）
+- `GET /api/auth/google/classroom/coursework`: ログイン中のGoogleアカウントが閲覧できるClassroomの公開済み課題のうち、作成日時が今年度（4月1日〜翌年4月1日）に含まれるもの
+- `GET /api/auth/google/calendar/events`: Googleカレンダーの予定のうち、作成日時が今年度に含まれるもの。予定日も今年度内を既定範囲として取得（`timeMin` / `timeMax` で指定可）
 
 Google連携機能を使うには、Google Cloud ConsoleでClassroom APIとCalendar APIを有効化し、OAuthの権限確認を完了してください。新しい権限を追加した既存ユーザーは、カレンダー画面からGoogle連携を再認証する必要があります。
 

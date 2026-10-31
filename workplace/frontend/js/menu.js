@@ -12,6 +12,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const calendarButton = document.getElementById("calendarMenuButton");
   const taskButton = document.getElementById("taskMenuButton");
   const scheduleButton = document.getElementById("scheduleMenuButton");
+  const googleIntegrationsButton = document.getElementById("googleIntegrationsMenuButton");
+  const googleIntegrations = document.getElementById("googleIntegrations");
   const dashboard = document.querySelector(".dashboard");
   const taskPanel = document.getElementById("taskPanel");
   const schedulePanel = document.getElementById("schedulePanel");
@@ -85,6 +87,19 @@ document.addEventListener("DOMContentLoaded", () => {
     scheduleButton.addEventListener("click", () => {
       showDashboardPanel(schedulePanel);
       displaySchedules();
+    });
+  }
+
+  if (googleIntegrationsButton && googleIntegrations) {
+    googleIntegrationsButton.addEventListener("click", () => {
+      if (menuPanel) {
+        menuPanel.classList.remove("active");
+      }
+      if (menuButton) {
+        menuButton.setAttribute("aria-expanded", "false");
+        menuButton.setAttribute("aria-label", "メニューを開く");
+      }
+      googleIntegrations.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   }
 

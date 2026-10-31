@@ -104,6 +104,7 @@ interface GoogleCoursework {
   description?: string
   alternateLink?: string
   state?: string
+  creationTime?: string
   dueDate?: { year: number; month: number; day: number }
   dueTime?: { hours?: number; minutes?: number }
 }
@@ -114,13 +115,38 @@ interface GoogleCalendarEvent {
   summary?: string
   description?: string
   htmlLink?: string
+  created?: string
   start?: { date?: string; dateTime?: string }
   end?: { date?: string; dateTime?: string }
+}
+
+function getAcademicYearRange(now = new Date()) {
+  const dateParts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Tokyo',
+    year: 'numeric',
+    month: 'numeric',
+  }).formatToParts(now)
+  const year = Number(dateParts.find((part) => part.type === 'year')?.value)
+  const month = Number(dateParts.find((part) => part.type === 'month')?.value)
+  const startYear = month >= 4 ? year : year - 1
+
+  return {
+    start: new Date(`${startYear}-04-01T00:00:00+09:00`),
+    end: new Date(`${startYear + 1}-04-01T00:00:00+09:00`),
+    label: `${startYear}年度`,
+  }
+}
+
+function createdThisAcademicYear(created: string | undefined, start: Date, end: Date) {
+  if (!created) return false
+  const createdAt = Date.parse(created)
+  return Number.isFinite(createdAt) && createdAt >= start.getTime() && createdAt < end.getTime()
 }
 
 export const GoogleDataController = {
   async classroomCoursework(c: Context<Env>) {
     return withGoogleData(c, async (accessToken) => {
+      const academicYear = getAcademicYearRange()
       const coursesUrl = new URL('https://classroom.googleapis.com/v1/courses')
       coursesUrl.searchParams.set('courseStates', 'ACTIVE')
       coursesUrl.searchParams.set('pageSize', '100')
@@ -150,15 +176,19 @@ export const GoogleDataController = {
         }
       }
 
-      return { coursework }
+      return {
+        coursework: coursework.filter((item) =>
+          createdThisAcademicYear(item.creationTime, academicYear.start, academicYear.end)
+        ),
+        academicYear: academicYear.label,
+      }
     })
   },
 
   async calendarEvents(c: Context<Env>) {
-    const now = new Date()
-    const timeMin = c.req.query('timeMin') || now.toISOString()
-    const defaultMax = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000)
-    const timeMax = c.req.query('timeMax') || defaultMax.toISOString()
+    const academicYear = getAcademicYearRange()
+    const timeMin = c.req.query('timeMin') || academicYear.start.toISOString()
+    const timeMax = c.req.query('timeMax') || academicYear.end.toISOString()
     if (
       !Number.isFinite(Date.parse(timeMin)) ||
       !Number.isFinite(Date.parse(timeMax)) ||
@@ -181,7 +211,7 @@ export const GoogleDataController = {
         url.searchParams.set('maxResults', '250')
         url.searchParams.set(
           'fields',
-          'nextPageToken,items(id,summary,description,htmlLink,start,end,status)'
+          'nextPageToken,items(id,summary,description,htmlLink,created,start,end,status)'
         )
         if (pageToken) url.searchParams.set('pageToken', pageToken)
         const result = await googleGet<{
@@ -192,7 +222,12 @@ export const GoogleDataController = {
         pageToken = result.nextPageToken
       } while (pageToken && events.length < 1000)
 
-      return { events }
+      return {
+        events: events.filter((event) =>
+          createdThisAcademicYear(event.created, academicYear.start, academicYear.end)
+        ),
+        academicYear: academicYear.label,
+      }
     })
   },
 }
