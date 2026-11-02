@@ -11,6 +11,7 @@ groupRoutes.use('*', authCheck)
 
 groupRoutes.get('/', (c) => GroupController.list(c))
 groupRoutes.post('/', rejectDemoAccess, (c) => GroupController.create(c))
+groupRoutes.put('/:id', rejectDemoAccess, (c) => GroupController.update(c))
 groupRoutes.post('/join', rejectDemoAccess, (c) => GroupController.join(c))
 groupRoutes.get('/:id/messages', (c) => GroupChatController.list(c))
 groupRoutes.post('/:id/messages', rejectDemoAccess, (c) => GroupChatController.create(c))

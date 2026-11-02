@@ -44,3 +44,14 @@ NeonのSQL Editorで実行してください。`groups.name` と `groups.created
   - 概要: 指定したグループ内で共有されているイベント一覧を取得する
 - `POST /api/groups/:id/events`
   - 概要: グループ内に新しい共有イベントを作成する
+
+## グループ情報の編集（管理者限定）
+- **Method:** `PUT`
+- **Path:** `/api/groups/:id`
+- **Body:**
+  ```json
+  {
+    "userId": 1,
+    "groupName": "新・1年A組 開発チーム",
+    "color": "#ef4444"
+  }
