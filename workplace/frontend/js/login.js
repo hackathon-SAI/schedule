@@ -1,5 +1,5 @@
 // APIベースURL（最新のプロダクションデプロイ）
-const API_BASE_URL = "https://schedule-phi-seven.vercel.app";
+const API_BASE_URL = window.API_BASE_URL || "https://schedule-backend-navy.vercel.app";
 // バックエンドのCORS設定に合わせた認証エンドポイント base
 // fetch POSTでの認証回避のため、リダイレクト認証フローを使用します
 
@@ -16,31 +16,23 @@ function initGoogleAuth() {
   }
 
   // Google Identity Services を使用してリダイレクト認証を設定
-  // バックエンドの /api/auth/google エンドポイントへリダイレクトする方式を使用
   codeClient = google.accounts.oauth2.initCodeClient({
     client_id: '1067955587484-appns84s4nb5t13797i53ur56e7ng49f.apps.googleusercontent.com',
     select_account: selectAccount,
     access_type: 'offline',
+    state: window.location.origin,
     ...(reauthorizeGoogle ? { prompt: 'consent' } : {}),
     scope: [
       'openid',
       'email',
       'profile',
-      // ユーザー指定の3つのスコープ（そのまま使用）
       'https://www.googleapis.com/auth/calendar.events.readonly',
       'https://www.googleapis.com/auth/userinfo.profile',
       'https://www.googleapis.com/auth/classroom.course-work.readonly',
     ].join(' '),
 
-    // 👇 リダイレクトモードを使用（CORS回避）
     ux_mode: 'redirect',
-
-    // 👇 リダイレクト先をバックエンドの認証エンドポイントに設定
-    // バックエンド側でGoogle認証後に処理を行い、フロントエンドにリダイレクトバック
     redirect_uri: `${API_BASE_URL}/api/auth/google/callback`,
-
-    // 👇 コールバックはリダイレクトモードでは使用されません（バックエンド経由で処理）
-    // リダイレクト後のトークンは app.js によって処理され、localStorage に保存されます
     callback: (response) => {
       console.log('Google OAuth redirect response:', response);
     }
@@ -50,7 +42,6 @@ function initGoogleAuth() {
 // Google認証リダイレクト開始
 function startGoogleAuthRedirect() {
   if (codeClient) {
-    // リダイレクトモードでは requestCode() がページ遷移を開始
     codeClient.requestCode();
   } else {
     initGoogleAuth();
@@ -66,9 +57,20 @@ function startGoogleAuthRedirect() {
 
 // ページ読み込み時
 document.addEventListener('DOMContentLoaded', async () => {
-  if (typeof redirectIfAuthenticated === 'function') {
+  const urlParams = new URLSearchParams(window.location.search);
+  const errorParam = urlParams.get('error');
+
+  if (errorParam) {
+    console.error('ログインエラー:', errorParam);
+    const desc = document.querySelector('.login-description');
+    if (desc) {
+      desc.textContent = 'ログインに失敗しました。もう一度お試しください。 (' + errorParam + ')';
+      desc.style.color = '#e53935';
+    }
+  } else if (typeof redirectIfAuthenticated === 'function') {
     redirectIfAuthenticated(API_BASE_URL);
   }
+
   initGoogleAuth();
 });
 

@@ -23,7 +23,7 @@ window.EventListFilters = (() => {
   let initialization;
 
   function apiBaseUrl() {
-    return window.API_BASE_URL || "https://schedule-phi-seven.vercel.app";
+    return window.API_BASE_URL || "https://schedule-backend-navy.vercel.app";
   }
 
   async function loadMetadata() {

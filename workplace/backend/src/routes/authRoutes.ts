@@ -20,7 +20,7 @@ authRoutes.get(
   async (c) => {
     // GoogleのOAuth2承認URLを構築
     // リダイレクトURIはBACKEND_URLを使用（Googleのコールバックエンドポイント）
-    const backendUrl = (c.env as any).BACKEND_URL || 'https://schedule-phi-seven.vercel.app'
+    const backendUrl = (c.env as any).BACKEND_URL || process.env.BACKEND_URL || 'https://schedule-backend-navy.vercel.app'
     const redirectUri = `${backendUrl}/api/auth/google/callback`
 
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth')
@@ -65,18 +65,23 @@ authRoutes.get(
   async (c) => {
     const code = c.req.query('code')
     const error = c.req.query('error')
+    const state = c.req.query('state')
+
+    const fallbackFrontend = (c.env as any).FRONTEND_URL || process.env.FRONTEND_URL || 'https://schedule-sai.vercel.app'
+    let frontendUrl = fallbackFrontend
+    if (state && (state.startsWith('https://schedule-sai') || state.startsWith('http://localhost') || state.startsWith('http://127.0.0.1'))) {
+      frontendUrl = state.replace(/\/$/, '')
+    }
 
     // Googleからエラーが返された場合
     if (error) {
       console.error('Google OAuth error:', error)
-      const frontendUrl = (c.env as any).FRONTEND_URL || 'https://schedule-sai-v2.vercel.app'
       return c.redirect(`${frontendUrl}/login.html?error=${encodeURIComponent(error)}`)
     }
 
     // 認可コードがない場合
     if (!code) {
       console.error('No authorization code received from Google')
-      const frontendUrl = (c.env as any).FRONTEND_URL || 'https://schedule-sai-v2.vercel.app'
       return c.redirect(`${frontendUrl}/login.html?error=missing_code`)
     }
 
@@ -94,11 +99,9 @@ authRoutes.get(
       })
 
       // フロントエンドの calendar.html にリダイレクト（トークンを URL パラメータとして渡す）
-      const frontendUrl = (c.env as any).FRONTEND_URL || 'https://schedule-sai-v2.vercel.app'
       return c.redirect(`${frontendUrl}/calendar.html?token=${token}`)
     } catch (err) {
       console.error('Google OAuth callback error:', err)
-      const frontendUrl = (c.env as any).FRONTEND_URL || 'https://schedule-sai-v2.vercel.app'
       return c.redirect(`${frontendUrl}/login.html?error=callback_failed`)
     }
   }

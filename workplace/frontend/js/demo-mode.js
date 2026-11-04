@@ -25,7 +25,7 @@ function buildAuthHeaders(extraHeaders = {}) {
   const pageName = window.location.pathname.split("/").pop();
   if (!token || !demoPages.has(pageName)) return;
 
-  const baseUrl = window.API_BASE_URL || "https://schedule-phi-seven.vercel.app";
+  const baseUrl = window.API_BASE_URL || "https://schedule-backend-navy.vercel.app";
   const backendOrigin = new URL(baseUrl, window.location.href).origin;
   const nativeFetch = window.fetch.bind(window);
   const navigationEntry = performance.getEntriesByType("navigation")[0];

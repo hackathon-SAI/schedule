@@ -24,10 +24,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const classroomMessage = document.getElementById("classroomMessage");
   const calendarMessage = document.getElementById("googleCalendarMessage");
   const reauthorizeButton = document.getElementById("reauthorizeGoogleButton");
-  const baseUrl = window.API_BASE_URL || "https://schedule-phi-seven.vercel.app";
+  const baseUrl = window.API_BASE_URL || "https://schedule-backend-navy.vercel.app";
 
   async function request(path) {
     const response = await fetch(`${baseUrl}${path}`, {
+      headers: buildAuthHeaders(),
       credentials: "include",
     });
     const data = await response.json().catch(() => ({}));
@@ -125,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await fetch(`${baseUrl}/api/events`, {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: buildAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           group_id: Number(groupId),
           title: event.title,
@@ -305,6 +306,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const response = await fetch(`${baseUrl}/api/auth/logout`, {
         method: "POST",
+        headers: buildAuthHeaders(),
         credentials: "include",
       });
       if (!response.ok) throw new Error("ログアウトできませんでした。");

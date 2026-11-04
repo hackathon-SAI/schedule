@@ -4,12 +4,19 @@ import 'dotenv/config'
 const frontendUrl = process.env.FRONTEND_URL
 
 // FRONTEND_URL が設定されていれば動的に使用、なければフォールバックとしてハードコード値を使用
-const productionAllowedOrigins = frontendUrl
-  ? [frontendUrl, 'https://schedule-sai-v2.vercel.app']
-  : ['https://schedule-sai-v2.vercel.app']
-const developmentAllowedOrigins = frontendUrl
-  ? [frontendUrl, 'http://127.0.0.1:8765', 'http://localhost:8765']
-  : [...productionAllowedOrigins, 'http://127.0.0.1:8765', 'http://localhost:8765']
+const productionAllowedOrigins = Array.from(
+  new Set([
+    frontendUrl,
+    'https://schedule-sai.vercel.app',
+  ].filter((url): url is string => Boolean(url)))
+)
+const developmentAllowedOrigins = Array.from(
+  new Set([
+    ...productionAllowedOrigins,
+    'http://127.0.0.1:8765',
+    'http://localhost:8765',
+  ])
+)
 
 const stateChangingMethods = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 

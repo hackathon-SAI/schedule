@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
     button.disabled = true;
     demoMessage.textContent = "デモを準備しています...";
     try {
-      const baseUrl = window.API_BASE_URL || "https://schedule-phi-seven.vercel.app";
+      const baseUrl = window.API_BASE_URL || "https://schedule-backend-navy.vercel.app";
       const response = await fetch(`${baseUrl}/api/demo/sessions`, {
         method: "POST",
         credentials: "include",

@@ -90,6 +90,7 @@ async function updateDashboard() {
       `${API_BASE_URL}/api/events?groupId=${encodeURIComponent(groupId)}`,
       {
         method: "GET",
+        headers: buildAuthHeaders(),
         credentials: "include",
       }
     );

@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const nicknameForm = document.getElementById("nicknameForm");
   const saveButton = document.getElementById("saveNickname");
   const message = document.getElementById("profileMessage");
-  const baseUrl = window.API_BASE_URL || "https://schedule-phi-seven.vercel.app";
+  const baseUrl = window.API_BASE_URL || "https://schedule-backend-navy.vercel.app";
   let user;
 
   function setMessage(text, isError = false) {
@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const response = await fetch(`${baseUrl}/api/auth/me`, {
         method: "PATCH",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: (typeof buildAuthHeaders === "function" ? buildAuthHeaders : (h) => h)({ "Content-Type": "application/json" }),
         body: JSON.stringify({ name }),
       });
       const data = await response.json().catch(() => ({}));

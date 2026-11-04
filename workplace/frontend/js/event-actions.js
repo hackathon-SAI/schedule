@@ -204,13 +204,13 @@ window.EventActions = (() => {
   }
 
   async function sendEventRequest(event, method, body) {
-    const baseUrl = window.API_BASE_URL || "https://schedule-phi-seven.vercel.app";
+    const baseUrl = window.API_BASE_URL || "https://schedule-backend-navy.vercel.app";
     const response = await fetch(
       `${baseUrl}/api/events/${encodeURIComponent(event.id)}`,
       {
         method,
         credentials: "include",
-        headers: body ? { "Content-Type": "application/json" } : undefined,
+        headers: buildAuthHeaders(body ? { "Content-Type": "application/json" } : {}),
         body: body ? JSON.stringify(body) : undefined,
       }
     );
@@ -305,7 +305,7 @@ window.EventActions = (() => {
   });
 
   const ready = (async () => {
-    const baseUrl = window.API_BASE_URL || "https://schedule-phi-seven.vercel.app";
+    const baseUrl = window.API_BASE_URL || "https://schedule-backend-navy.vercel.app";
     // デモモード中はダミーユーザー情報を使用（バックエンド認証チェック不要）
     if (window.DemoMode?.active) {
       currentUserId = 0;

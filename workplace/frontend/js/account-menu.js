@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const emailElement = document.getElementById("accountMenuEmail");
   const avatarInitial = document.getElementById("accountAvatarInitial");
   const avatarImage = document.getElementById("accountAvatarImage");
-  const baseUrl = window.API_BASE_URL || "https://schedule-phi-seven.vercel.app";
+  const baseUrl = window.API_BASE_URL || "https://schedule-backend-navy.vercel.app";
 
   function closeMenu() {
     panel.hidden = true;
@@ -105,6 +105,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   try {
     const response = await fetch(`${baseUrl}/api/auth/me`, {
+      headers: buildAuthHeaders(),
       credentials: "include",
     });
     if (response.status === 401) {

@@ -65,13 +65,16 @@ export const AuthController = {
    */
   async processGoogleCode(code: string): Promise<{ user: any; token: string }> {
     // 1. 認可コードを各種トークン（Access / Refresh / ID Token）と交換
-    const redirectUri = 'https://schedule-phi-seven.vercel.app/api/auth/google/callback'
+    const backendUrl = process.env.BACKEND_URL || 'https://schedule-backend-navy.vercel.app'
+    const redirectUri = `${backendUrl}/api/auth/google/callback`
     const { tokens } = await googleClient.getToken({ code, redirect_uri: redirectUri })
     googleClient.setCredentials(tokens)
 
     // 2. IDトークンからユーザー情報を取得
     if (!tokens.id_token) {
-      throw new Error('IDトークンを取得できませんでした')
+      const err = new Error('IDトークンを取得できませんでした')
+      ;(err as any).statusCode = 400
+      throw err
     }
 
     const ticket = await googleClient.verifyIdToken({
@@ -160,8 +163,12 @@ export const AuthController = {
         message: 'Google 連携・ログインに成功しました',
         user: { id: user.id, name: user.name, email: user.email, picture: user.picture },
       })
-    } catch (err) {
+    } catch (err: any) {
       console.error('Google 認証エラー:', err)
+
+      if (err?.statusCode === 400) {
+        return c.json({ error: 'Google 認証に失敗しました' }, 400)
+      }
 
       const isProduction =
         process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'

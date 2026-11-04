@@ -2,7 +2,7 @@ let calendar;
 let calendarUpdateRequest = 0;
 
 // APIベースURL（グローバル変数が未定義の場合はデフォルトを使用）
-const API_BASE_URL = window.API_BASE_URL || "https://schedule-phi-seven.vercel.app";
+const API_BASE_URL = window.API_BASE_URL || "https://schedule-backend-navy.vercel.app";
 
 // JWT トークンを含む認証ヘッダーを構築（Cookie が機能しない場合のフォールバック）
 function buildAuthHeaders(extraHeaders = {}) {

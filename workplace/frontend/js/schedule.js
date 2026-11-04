@@ -64,9 +64,7 @@ function buildAuthHeaders(extraHeaders = {}) {
 
     const res = await fetch(`${API_BASE_URL}/api/events`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: buildAuthHeaders(),
       credentials: 'include',
       body: JSON.stringify({
         group_id: Number(groupId),

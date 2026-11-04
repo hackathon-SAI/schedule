@@ -18,7 +18,9 @@ function createApp() {
 }
 
 test('production allows only the frontend origin', () => {
-  assert.deepEqual(getAllowedOrigins('production'), ['https://schedule-sai-v2.vercel.app'])
+  assert.deepEqual(getAllowedOrigins('production'), [
+    'https://schedule-sai.vercel.app',
+  ])
 })
 
 test('rejects disallowed and missing origins on every state-changing method', async () => {

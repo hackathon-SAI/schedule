@@ -10,7 +10,8 @@ const require = createRequire(import.meta.url)
 
 const ga = require('google-auth-library')
 const mockOAuth2Client = class {
-  getToken: any = async (code: string) => {
+  getToken: any = async (param: any) => {
+    const code = typeof param === 'string' ? param : param?.code
     if (code === 'valid-code') {
       return { tokens: { access_token: 'ya29.mock', id_token: 'mock-id-token', token_type: 'Bearer', expiry_date: Date.now() + 3600000 } }
     }
@@ -62,6 +63,7 @@ UserModel.updatePicture = async (id: number, picture: string) => {
   for (const u of mockUsers.values()) if (u.id === id) { u.picture = picture; return u }
   return null
 }
+UserModel.updateGoogleTokens = async () => {}
 
 AuditLogModel.createFromContext = async (c: any, userId: number, eventType: string, details?: any) => ({
   id: 1, user_id: userId, event_type: eventType, event_details: details
@@ -91,7 +93,7 @@ test.beforeEach(() => { mockUsers.clear(); nextUserId = 1 })
 test('Google login valid code', async () => {
   const app = createApp()
   const res = await app.request('/auth/google', {
-    method: 'POST', headers: { Origin: 'https://schedule-sai-v2.vercel.app', 'Content-Type': 'application/json' },
+    method: 'POST', headers: { Origin: 'https://schedule-sai.vercel.app', 'Content-Type': 'application/json' },
     body: JSON.stringify({ code: 'valid-code' }),
   })
   assert.equal(res.status, 200)
@@ -105,7 +107,7 @@ test('Google login valid code', async () => {
 test('Google login invalid code', async () => {
   const app = createApp()
   const res = await app.request('/auth/google', {
-    method: 'POST', headers: { Origin: 'https://schedule-sai-v2.vercel.app', 'Content-Type': 'application/json' },
+    method: 'POST', headers: { Origin: 'https://schedule-sai.vercel.app', 'Content-Type': 'application/json' },
     body: JSON.stringify({ code: 'invalid-code' }),
   })
   assert.equal(res.status, 400)
@@ -114,7 +116,7 @@ test('Google login invalid code', async () => {
 test('Google login missing code', async () => {
   const app = createApp()
   const res = await app.request('/auth/google', {
-    method: 'POST', headers: { Origin: 'https://schedule-sai-v2.vercel.app', 'Content-Type': 'application/json' },
+    method: 'POST', headers: { Origin: 'https://schedule-sai.vercel.app', 'Content-Type': 'application/json' },
     body: JSON.stringify({}),
   })
   assert.equal(res.status, 400)
@@ -133,7 +135,7 @@ test('Rate limit: 5 ok then 429', async () => {
   const app = createApp()
   for (let i = 0; i < 6; i++) {
     const res = await app.request('/auth/google', {
-      method: 'POST', headers: { Origin: 'https://schedule-sai-v2.vercel.app', 'Content-Type': 'application/json' },
+      method: 'POST', headers: { Origin: 'https://schedule-sai.vercel.app', 'Content-Type': 'application/json' },
       body: JSON.stringify({ code: 'valid-code' }),
     })
     assert.equal(res.status, i < 5 ? 200 : 429)

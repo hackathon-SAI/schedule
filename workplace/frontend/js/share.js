@@ -60,10 +60,10 @@ document.addEventListener('DOMContentLoaded', () => {
         ...options,
         signal: controller.signal,
         credentials: 'include',
-        headers: {
+        headers: (typeof buildAuthHeaders === "function" ? buildAuthHeaders : (h) => h)({
           'Content-Type': 'application/json',
           ...options.headers,
-        },
+        }),
       });
     } catch (error) {
       console.error(`グループAPI通信エラー (${path}):`, error);

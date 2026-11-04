@@ -8,63 +8,74 @@
   if (token && token.trim() !== "") {
     // トークンを jwt_token キーに保存（後方互換性のため token キーにも保存）
     localStorage.setItem('jwt_token', token);
-    localStorage.setItem('token', token); // 互換性のため - 他のファイルで token を使用する場合に対応
-    console.log('✅ 有効なトークンをURLから正常に保存しました（jwt_token と token キーに）');
-    console.log('保存されたトークン:', token);
-    // URL からクエリパラメータを削除（履歴を綺麗にする）
-    const cleanUrl = window.location.pathname + window.location.search.replace(token, '').replace(/\?$/, '');
+    localStorage.setItem('token', token);
+    console.log('✅ 有効なトークンをURLから正常に保存しました（jwt_token と token キー）');
+
+    // URL から token パラメータのみを綺麗に削除（他のパラメータやハッシュは保持）
+    searchParams.delete('token');
+    const newSearch = searchParams.toString();
+    const cleanUrl = window.location.pathname + (newSearch ? `?${newSearch}` : '') + window.location.hash;
     window.history.replaceState(null, document.title, cleanUrl);
   } else if (window.location.search.includes('token')) {
-    // ⚠️ tokenパラメータはあるのに中身が空の場合
     console.warn('⚠️ トークンが空の状態でリダイレクトされました');
-    // クエリパラメータをクリーンアップしてリダイレクトループを防止
-    const cleanUrl = window.location.pathname;
+    searchParams.delete('token');
+    const newSearch = searchParams.toString();
+    const cleanUrl = window.location.pathname + (newSearch ? `?${newSearch}` : '') + window.location.hash;
     window.history.replaceState(null, document.title, cleanUrl);
-  } else {
-    console.log('⚠️ URL にトークンパラメータは存在しません');
   }
 })();
 
 // ===== APIベースURL（未定義ならデフォルトを設定） =====
-const DEFAULT_API_URL = "https://schedule-phi-seven.vercel.app";
+const DEFAULT_API_URL = "https://schedule-backend-navy.vercel.app";
 
-// ===== JWT トークンを localStorage に保存・取得する関数（Cookie が正しく設定されない場合のフォールバック） =====
+// ===== JWT トークンを localStorage に保存・取得する関数 =====
 const TokenStorage = {
   set(token) {
     if (token) {
-      localStorage.setItem('token', token); // 主なキー名
-      localStorage.setItem('jwt_token', token); // 後方互換性のため
-      console.log('✅ トークンを正常に保存しました（token キー）');
+      localStorage.setItem('token', token);
+      localStorage.setItem('jwt_token', token);
+      console.log('✅ トークンを正常に保存しました');
     }
   },
   get() {
-    return localStorage.getItem('token') || localStorage.getItem('jwt_token'); // 'token' を優先
+    return localStorage.getItem('token') || localStorage.getItem('jwt_token');
   },
   clear() {
     localStorage.removeItem('token');
     localStorage.removeItem('jwt_token');
   }
-}
+};
+window.TokenStorage = TokenStorage;
 
+// ===== JWT トークンを含む認証ヘッダーを構築（グローバル利用可能） =====
+function buildAuthHeaders(extraHeaders = {}) {
+  const token = TokenStorage.get();
+  const headers = {
+    "Content-Type": "application/json",
+    ...extraHeaders
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  return headers;
+}
+window.buildAuthHeaders = buildAuthHeaders;
 
 /**
- * トークンが localStorage に保存されるまで待機する（最大5秒）
- * 非同期でトークンがセットされる前にAPIが走るのを防ぐためのガード
+ * トークンが localStorage に保存されるまで待機する
  */
-async function waitForToken(timeout = 5000) {
+async function waitForToken(timeout = 500) {
   const startTime = Date.now();
-  const checkInterval = 50; // 50msごとにチェック
+  const checkInterval = 30;
   
   return new Promise((resolve) => {
     const check = () => {
       const token = TokenStorage.get();
       if (token && token.trim() !== "") {
-        console.log('✅ トークン確認完了:', token.substring(0, 20) + '...');
         resolve(token);
         return;
       }
       if (Date.now() - startTime > timeout) {
-        console.warn('⚠️ トークン待機タイムアウト（' + timeout + 'ms）');
         resolve(null);
         return;
       }
@@ -75,7 +86,7 @@ async function waitForToken(timeout = 5000) {
 }
 
 /**
- * 1. バックエンド（Neon）に問い合わせてログイン状態をチェックする関数
+ * 1. バックエンドに問い合わせてログイン状態をチェックする関数
  */
 async function checkAuth(baseUrl = window.API_BASE_URL || DEFAULT_API_URL) {
   // デモモード中はダミーユーザー情報を返す（バックエンド認証チェックは不要）
@@ -88,18 +99,17 @@ async function checkAuth(baseUrl = window.API_BASE_URL || DEFAULT_API_URL) {
     };
   }
 
-  // トークンが保存されるまで待機（非同期セットのガード）
-  await waitForToken();
-
-  const token = TokenStorage.get()
-  const headers = {
-    'Content-Type': 'application/json'
+  // URLにtokenパラメータがあった場合は保存完了を待機
+  if (window.location.search.includes('token')) {
+    await waitForToken(1000);
   }
 
-  // JWT トークンを Authorization ヘッダーで送信（Cookie が機能しない場合のフォールバック）
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`
+  const token = TokenStorage.get();
+  if (!token) {
+    return null;
   }
+
+  const headers = buildAuthHeaders();
 
   try {
     const res = await fetch(`${baseUrl}/api/auth/me`, {
@@ -107,6 +117,12 @@ async function checkAuth(baseUrl = window.API_BASE_URL || DEFAULT_API_URL) {
       headers,
       credentials: "include"
     });
+
+    if (res.status === 401) {
+      // 認証切れ・無効なトークンはクリアしてループを防止
+      TokenStorage.clear();
+      return null;
+    }
 
     if (!res.ok) {
       return null;
@@ -121,16 +137,15 @@ async function checkAuth(baseUrl = window.API_BASE_URL || DEFAULT_API_URL) {
 }
 
 /**
- * 2. メイン画面（index.html等）用：未ログインなら login.html へ飛ばす
+ * 2. 認証が必要な画面用：未ログインなら login.html へ飛ばす
  */
 async function requireAuth(baseUrl = window.API_BASE_URL || DEFAULT_API_URL) {
-  // 認証不要の公開ページリスト
+  // 認証不要の公開ページリスト（※calendar.htmlはログイン必須）
   const publicPages = [
-    "index.html", // ※もし index.html も完全公開ならここに入れます（ログイン必須なら外してください）
+    "index.html",
     "login.html",
     "privacy-policy.html",
-    "terms-of-service.html",
-    "calendar.html"
+    "terms-of-service.html"
   ];
 
   const currentPage = window.location.pathname.split("/").pop() || "index.html";
@@ -149,10 +164,8 @@ async function requireAuth(baseUrl = window.API_BASE_URL || DEFAULT_API_URL) {
       return null;
     }
 
-    // 未ログインかつログインページでなければリダイレクト（500ms待機）
-    if (!window.location.pathname.endsWith('login.html')) {
-      redirectToLoginIfStillUnauthenticated();
-    }
+    // 未ログインかつログインページでなければリダイレクト
+    redirectToLoginIfStillUnauthenticated();
     return null;
   }
 
@@ -160,31 +173,28 @@ async function requireAuth(baseUrl = window.API_BASE_URL || DEFAULT_API_URL) {
 }
 
 /**
- * リダイレクト前にトークン復旧を待機（500ms間隔チェック）
- * 非同期でトークンがセットされる前にリダイレクトするのを防ぐ
+ * リダイレクト前にトークン復旧を少し待機（非同期セットのガード）
  */
 let redirectTimer = null;
 
-function redirectToLoginIfStillUnauthenticated(delayMs = 500) {
-  // 既存のタイマーをクリア（重複リダイレクト防止）
+function redirectToLoginIfStillUnauthenticated(delayMs = 300) {
   if (redirectTimer) {
     clearTimeout(redirectTimer);
   }
 
-  redirectTimer = setTimeout(async () => {
-    // 再度トークンをチェック（復旧した可能性があるため）
-    const token = TokenStorage.get();
-    if (token && token.trim() !== "") {
-      console.log('✅ トークンが復旧しました。リダイレクトをキャンセルします。');
-      return;
-    }
-
-    // デモモードもチェック
+  redirectTimer = setTimeout(() => {
+    // デモモードならリダイレクト不要
     if (window.DemoMode?.active) {
       return;
     }
 
-    // リダイレクト実行
+    // トークンが存在すればリダイレクトをキャンセル
+    const token = TokenStorage.get();
+    if (token && token.trim() !== "") {
+      return;
+    }
+
+    // ログインページへのリダイレクト実行
     if (!window.location.pathname.endsWith('login.html')) {
       window.location.href = 'login.html';
     }
@@ -192,11 +202,11 @@ function redirectToLoginIfStillUnauthenticated(delayMs = 500) {
 }
 
 /**
- * 3. ログイン画面（login.html）用：すでにログイン済みなら index.html へ飛ばす
+ * 3. ログイン画面（login.html）用：すでにログイン済みなら calendar.html へ飛ばす
  */
 async function redirectIfAuthenticated(baseUrl = window.API_BASE_URL || DEFAULT_API_URL) {
   const user = await checkAuth(baseUrl);
   if (user) {
-    window.location.href = 'https://schedule-sai-v2.vercel.app/calendar.html';
+    window.location.href = 'calendar.html';
   }
 }
