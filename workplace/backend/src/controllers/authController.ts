@@ -1,10 +1,11 @@
 import { OAuth2Client } from 'google-auth-library'
-import { AppContext } from '../types/hono'
+import { AppContext } from '../types/hono.js'
 import { setCookie, deleteCookie } from 'hono/cookie'
 import { sign } from 'hono/jwt'
-import { sql } from '../config/db'
-import { UserModel } from '../models/userModel'
-import { AuditLogModel } from '../models/auditLogModel'
+import { sql } from '../config/db.js'
+import { UserModel } from '../models/userModel.js'
+import { AuditLogModel } from '../models/auditLogModel.js'
+import { validateJwtSecretEntropy } from '../middleware/authMiddleware.js'
 import { createProfileAvatar, isGeneratedProfileAvatar, encryptToken } from '../utils/profileAvatar'
 
 const googleClient = new OAuth2Client(
@@ -42,6 +43,9 @@ export const getJwtSecret = (): string => {
 
   // 本番環境では最小長 32 文字を強制（HS256 では 256-bit = 32 bytes 推奨）
   const isProduction =
+  // エントロピー検証（長さ・文字多様性・弱いパターンを統一的にチェック）
+  validateJwtSecretEntropy(secret);
+
     process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'
   if (isProduction && secret.length < 32) {
     throw new Error(

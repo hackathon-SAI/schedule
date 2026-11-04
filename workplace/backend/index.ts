@@ -8,16 +8,16 @@ if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
 import { serve } from '@hono/node-server'
 import { secureHeaders } from 'hono/secure-headers'
 import { cors } from 'hono/cors'
-import { Env } from './src/types/hono'
-import { createOriginGuard, getAllowedOrigins, requireJsonContentType } from './src/middleware/requestSecurity'
-import { apiWriteRateLimit } from './src/middleware/rateLimit'
-import { bodySizeLimit } from './src/middleware/bodyLimit'
-import { getJwtSecret } from './src/controllers/authController';
-import eventRoutes from './src/routes/eventRoutes'
-import authRoutes from './src/routes/authRoutes'
-import groupRoutes from './src/routes/groupRoutes'
-import holidayRoutes from './src/routes/holidayRoutes'
-import demoRoutes from './src/routes/demoRoutes'
+import { Env } from './src/types/hono.js'
+import { createOriginGuard, getAllowedOrigins, requireJsonContentType } from './src/middleware/requestSecurity.js'
+import { apiWriteRateLimit } from './src/middleware/rateLimit.js'
+import { bodySizeLimit } from './src/middleware/bodyLimit.js'
+import { getJwtSecret } from './src/controllers/authController.js';
+import eventRoutes from './src/routes/eventRoutes.js'
+import authRoutes from './src/routes/authRoutes.js'
+import groupRoutes from './src/routes/groupRoutes.js'
+import holidayRoutes from './src/routes/holidayRoutes.js'
+import demoRoutes from './src/routes/demoRoutes.js'
 
 // 起動時に JWT_SECRET の未設定・短すぎる値を検知して即失敗させる
 getJwtSecret()
@@ -45,7 +45,7 @@ app.use(
       return null
     },
     credentials: true,
-    allowMethods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+    allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
     // f8: CORS プレフライト最大有効時間（ブラウザキャッシュ最適化）
     maxAge: 86400,

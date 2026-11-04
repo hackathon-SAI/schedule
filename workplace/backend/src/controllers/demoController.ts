@@ -1,10 +1,10 @@
 import { getCookie, setCookie, deleteCookie } from 'hono/cookie'
 import { randomBytes } from 'node:crypto'
 import { sign, verify } from 'hono/jwt'
-import { AppContext, JWTPayload } from '../types/hono'
-import { getJwtSecret } from './authController'
-import { UserModel } from '../models/userModel'
-import { sql } from '../config/db'
+import { AppContext, JWTPayload } from '../types/hono.js'
+import { getJwtSecret } from './authController.js'
+import { UserModel } from '../models/userModel.js'
+import { sql } from '../config/db.js'
 
 const demoCookie = 'demo_token'
 const demoLifetimeSeconds = 30 * 60
@@ -156,7 +156,7 @@ export const DemoController = {
       SELECT g.id, g.name, gm.role
       FROM groups g
       JOIN group_members gm ON gm.group_id = g.id
-      WHERE gm.user_id = ${user.id}
+      WHERE gm.user_id = ${user.id} AND g.is_demo = true
       ORDER BY g.id DESC
     `
     const events = await sql`

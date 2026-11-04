@@ -1,10 +1,10 @@
 import type { Context, Next } from 'hono'
 import { getCookie } from 'hono/cookie'
 import { verify } from 'hono/jwt'
-import { Env, JWTPayload } from '../types/hono'
-import { UserModel } from '../models/userModel'
-import { getJwtSecret } from '../controllers/authController'
-import { sql } from '../config/db'
+import { Env, JWTPayload } from '../types/hono.js'
+import { UserModel } from '../models/userModel.js'
+import { getJwtSecret } from '../controllers/authController.js'
+import { sql } from '../config/db.js'
 
 type TokenVersionLookup = (id: string | number) => Promise<number | null>
 
@@ -20,7 +20,7 @@ async function markJtiUsed(jti: string, exp: number): Promise<void> {
 }
 
 // JWT 署名鍵のエントロピー検証 (R06)
-function validateJwtSecretEntropy(secret: string): void {
+export function validateJwtSecretEntropy(secret: string): void {
   if (secret.length < 32) {
     throw new Error('JWT_SECRET must be at least 32 characters')
   }
